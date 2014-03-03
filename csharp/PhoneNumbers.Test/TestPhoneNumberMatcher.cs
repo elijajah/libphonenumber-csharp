@@ -209,7 +209,8 @@ namespace PhoneNumbers.Test
         {
             String number = "415-666-7777";
             String zipPreceding = "My address is CA 34215 - " + number + " is my number.";
-            PhoneNumber expectedResult = phoneUtil.Parse(number, "US");
+            PhoneNumber expectedResult;
+            phoneUtil.Parse(number, "US", out expectedResult);
 
             var iterator = phoneUtil.FindNumbers(zipPreceding, "US").GetEnumerator();
             PhoneNumberMatch match = iterator.MoveNext() ? iterator.Current : null;
@@ -748,7 +749,8 @@ namespace PhoneNumbers.Test
 
             // Matches all 100. Max only applies to failed cases.
             List<PhoneNumber> expected = new List<PhoneNumber>(100);
-            PhoneNumber number = phoneUtil.Parse("+14156667777", null);
+            PhoneNumber number;
+            phoneUtil.Parse("+14156667777", null, out number);
             for (int i = 0; i < 100; i++)
                 expected.Add(number);
 
@@ -783,7 +785,8 @@ namespace PhoneNumbers.Test
 
             // Only matches the first 10 despite there being 100 numbers due to max matches.
             List<PhoneNumber> expected = new List<PhoneNumber>(100);
-            PhoneNumber number = phoneUtil.Parse("+14156667777", null);
+            PhoneNumber number;
+            phoneUtil.Parse("+14156667777", null, out number);
             for (int i = 0; i < 10; i++)
                 expected.Add(number);
 
@@ -860,7 +863,8 @@ namespace PhoneNumbers.Test
         {
             findPossibleInContext(number, defaultCountry);
 
-            PhoneNumber parsed = phoneUtil.Parse(number, defaultCountry);
+            PhoneNumber parsed;
+            phoneUtil.Parse(number, defaultCountry, out parsed);
             if (phoneUtil.IsValidNumber(parsed))
                 findValidInContext(number, defaultCountry);
         }

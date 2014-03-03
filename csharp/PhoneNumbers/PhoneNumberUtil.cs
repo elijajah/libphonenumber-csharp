@@ -1403,20 +1403,18 @@ namespace PhoneNumbers
             String normalizedNationalNumber = NormalizeDigitsOnly(rawInput);
             if (normalizedNationalNumber.StartsWith(nationalPrefix))
             {
-                try
-                {
-                    // Some Japanese numbers (e.g. 00777123) might be mistaken to contain the national prefix
-                    // when written without it (e.g. 0777123) if we just do prefix matching. To tackle that, we
-                    // check the validity of the number if the assumed national prefix is removed (777123 won't
-                    // be valid in Japan).
-                    return IsValidNumber(
-                        Parse(normalizedNationalNumber.Substring(nationalPrefix.Length), regionCode));
-                }
-                catch (NumberParseException)
-                {
-                    return false;
-                }
+                // Some Japanese numbers (e.g. 00777123) might be mistaken to contain the national prefix
+                // when written without it (e.g. 0777123) if we just do prefix matching. To tackle that, we
+                // check the validity of the number if the assumed national prefix is removed (777123 won't
+                // be valid in Japan).
+                PhoneNumber numberToValidate;
+                var result = Parse(normalizedNationalNumber.Substring(nationalPrefix.Length), regionCode,
+                    out numberToValidate);
+
+                if (result == ErrorType.NO_ERROR)
+                    return IsValidNumber(numberToValidate);
             }
+
             return false;
         }
 
@@ -1734,13 +1732,15 @@ namespace PhoneNumbers
             if (!IsValidRegionCode(regionCode))
                 return null;
             var desc = GetNumberDescByType(GetMetadataForRegion(regionCode), type);
-            try
+
+            if (desc.HasExampleNumber)
             {
-                if (desc.HasExampleNumber)
-                    return Parse(desc.ExampleNumber, regionCode);
-            }
-            catch (NumberParseException)
-            {
+                PhoneNumber exampleNumber;
+                var result = Parse(desc.ExampleNumber, regionCode, out exampleNumber);
+                if (result == ErrorType.NO_ERROR)
+                {
+                    return exampleNumber;
+                }
             }
             return null;
         }
@@ -1759,23 +1759,15 @@ namespace PhoneNumbers
             if (metadata != null)
             {
                 PhoneNumberDesc desc = metadata.GeneralDesc;
-                try
+                if (desc.HasExampleNumber)
                 {
-                    if (desc.HasExampleNumber)
-                    {
-                        return Parse("+" + countryCallingCode + desc.ExampleNumber, "ZZ");
-                    }
-                }
-                catch (NumberParseException)
-                {
-                    //LOGGER.log(Level.SEVERE, e.toString());
+                    PhoneNumber exampleNumber;
+                    var result = Parse("+" + countryCallingCode + desc.ExampleNumber, "ZZ", out exampleNumber);
+                    if (result == ErrorType.NO_ERROR)
+                        return exampleNumber;
                 }
             }
-            else
-            {
-                //LOGGER.log(Level.WARNING,
-                //  "Invalid or unknown country calling code provided: " + countryCallingCode);
-            }
+
             return null;
         }
 
@@ -2263,14 +2255,12 @@ namespace PhoneNumbers
         */
         public bool IsPossibleNumber(String number, String regionDialingFrom)
         {
-            try
-            {
-                return IsPossibleNumber(Parse(number, regionDialingFrom));
-            }
-            catch (NumberParseException)
-            {
-                return false;
-            }
+            PhoneNumber resultingNumber;
+            var result = Parse(number, regionDialingFrom, out resultingNumber);
+            if(result == ErrorType.NO_ERROR)
+                return IsPossibleNumber(resultingNumber);
+
+            return false;
         }
 
         /**
@@ -2370,11 +2360,15 @@ namespace PhoneNumbers
         *     only populated when keepCountryCodeSource is true.
         * @return  the country calling code extracted or 0 if none could be extracted
         */
-        public int MaybeExtractCountryCode(String number, PhoneMetadata defaultRegionMetadata,
-            StringBuilder nationalNumber, bool keepRawInput, PhoneNumber.Builder phoneNumber)
+        public ErrorType MaybeExtractCountryCode(String number, PhoneMetadata defaultRegionMetadata,
+            StringBuilder nationalNumber, bool keepRawInput, PhoneNumber.Builder phoneNumber, out int resultingCountryCode)
         {
             if (number.Length == 0)
-                return 0;
+            {
+                resultingCountryCode = 0;
+                return ErrorType.NO_ERROR;
+            }
+
             StringBuilder fullNumber = new StringBuilder(number);
             // Set the default prefix to be something that will never match.
             String possibleCountryIddPrefix = "NonMatch";
@@ -2393,21 +2387,22 @@ namespace PhoneNumbers
             {
                 if (fullNumber.Length <= MIN_LENGTH_FOR_NSN)
                 {
-                    throw new NumberParseException(ErrorType.TOO_SHORT_AFTER_IDD,
-                           "Phone number had an IDD, but after this was not "
-                           + "long enough to be a viable phone number.");
+                    resultingCountryCode = 0;
+                    return ErrorType.TOO_SHORT_AFTER_IDD;
                 }
                 int potentialCountryCode = ExtractCountryCode(fullNumber, nationalNumber);
                 if (potentialCountryCode != 0)
                 {
                     phoneNumber.SetCountryCode(potentialCountryCode);
-                    return potentialCountryCode;
+
+                    resultingCountryCode = potentialCountryCode;
+                    return ErrorType.NO_ERROR;
                 }
 
                 // If this fails, they must be using a strange country calling code that we don't recognize,
                 // or that doesn't exist.
-                throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE,
-                    "Country calling code supplied was not recognised.");
+                resultingCountryCode = 0;
+                return ErrorType.INVALID_COUNTRY_CODE;
             }
             else if (defaultRegionMetadata != null)
             {
@@ -2440,13 +2435,17 @@ namespace PhoneNumbers
                         if (keepRawInput)
                             phoneNumber.SetCountryCodeSource(CountryCodeSource.FROM_NUMBER_WITHOUT_PLUS_SIGN);
                         phoneNumber.SetCountryCode(defaultCountryCode);
-                        return defaultCountryCode;
+
+                        resultingCountryCode = defaultCountryCode;
+                        return ErrorType.NO_ERROR;
                     }
                 }
             }
+
             // No country calling code present.
             phoneNumber.SetCountryCode(0);
-            return 0;
+            resultingCountryCode = 0;
+            return ErrorType.NO_ERROR;
         }
 
         /**
@@ -2639,20 +2638,26 @@ namespace PhoneNumbers
         *                               no default region was supplied and the number is not in
         *                               international format (does not start with +)
         */
-        public PhoneNumber Parse(String numberToParse, String defaultRegion)
+        public ErrorType Parse(String numberToParse, String defaultRegion, out PhoneNumber resultingPhoneNumber)
         {
             var phoneNumber = new PhoneNumber.Builder();
-            Parse(numberToParse, defaultRegion, phoneNumber);
-            return phoneNumber.Build();
+            var parseResult = Parse(numberToParse, defaultRegion, phoneNumber);
+
+            if (parseResult == ErrorType.NO_ERROR)
+                resultingPhoneNumber = phoneNumber.Build();
+            else
+                resultingPhoneNumber = null;
+
+            return parseResult;
         }
 
         /**
         * Same as {@link #parse(String, String)}, but accepts mutable PhoneNumber as a parameter to
         * decrease object creation when invoked many times.
         */
-        public void Parse(String numberToParse, String defaultRegion, PhoneNumber.Builder phoneNumber)
+        public ErrorType Parse(String numberToParse, String defaultRegion, PhoneNumber.Builder phoneNumber)
         {
-            ParseHelper(numberToParse, defaultRegion, false, true, phoneNumber);
+            return TryParseHelper(numberToParse, defaultRegion, false, true, phoneNumber);
         }
 
         /**
@@ -2670,20 +2675,26 @@ namespace PhoneNumbers
         * @throws NumberParseException  if the string is not considered to be a viable phone number or if
         *                               no default region was supplied
         */
-        public PhoneNumber ParseAndKeepRawInput(String numberToParse, String defaultRegion)
+        public ErrorType ParseAndKeepRawInput(String numberToParse, String defaultRegion, out PhoneNumber resultingNumber)
         {
             var phoneNumber = new PhoneNumber.Builder();
-            ParseAndKeepRawInput(numberToParse, defaultRegion, phoneNumber);
-            return phoneNumber.Build();
+            var result = TryParseAndKeepRawInput(numberToParse, defaultRegion, phoneNumber);
+            
+            if (result == ErrorType.NO_ERROR)
+                resultingNumber = phoneNumber.Build();
+            else
+                resultingNumber = null;
+
+            return result;
         }
 
         /**
         * Same as{@link #parseAndKeepRawInput(String, String)}, but accepts a mutable PhoneNumber as
         * a parameter to decrease object creation when invoked many times.
         */
-        public void ParseAndKeepRawInput(String numberToParse, String defaultRegion, PhoneNumber.Builder phoneNumber)
+        public ErrorType TryParseAndKeepRawInput(String numberToParse, String defaultRegion, PhoneNumber.Builder phoneNumber)
         {
-            ParseHelper(numberToParse, defaultRegion, true, true, phoneNumber);
+            return TryParseHelper(numberToParse, defaultRegion, true, true, phoneNumber);
         }
 
         /**
@@ -2732,28 +2743,24 @@ namespace PhoneNumbers
         * isNumberMatch(). checkRegion should be set to false if it is permitted for the default region
         * to be null or unknown ("ZZ").
         */
-        private void ParseHelper(String numberToParse, String defaultRegion, bool keepRawInput,
+        private ErrorType TryParseHelper(String numberToParse, String defaultRegion, bool keepRawInput,
             bool checkRegion, PhoneNumber.Builder phoneNumber)
         {
             if (numberToParse == null)
-                throw new NumberParseException(ErrorType.NOT_A_NUMBER,
-                    "The phone number supplied was null.");
+                return ErrorType.NOT_A_NUMBER;
             else if (numberToParse.Length > MAX_INPUT_STRING_LENGTH)
-                throw new NumberParseException(ErrorType.TOO_LONG,
-                    "The string supplied was too long to parse.");
+                return ErrorType.TOO_LONG;
 
             StringBuilder nationalNumber = new StringBuilder();
             BuildNationalNumberForParsing(numberToParse, nationalNumber);
 
             if (!IsViablePhoneNumber(nationalNumber.ToString()))
-                throw new NumberParseException(ErrorType.NOT_A_NUMBER,
-                    "The string supplied did not seem to be a phone number.");
+                return ErrorType.NOT_A_NUMBER;
 
             // Check the region supplied is valid, or that the extracted number starts with some sort of +
             // sign so the number's region can be determined.
             if (checkRegion && !CheckRegionForParsing(nationalNumber.ToString(), defaultRegion))
-                throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE,
-                    "Missing or invalid default region.");
+                return ErrorType.INVALID_COUNTRY_CODE;
 
             if (keepRawInput)
                 phoneNumber.SetRawInput(numberToParse);
@@ -2769,34 +2776,31 @@ namespace PhoneNumbers
             // from the default region or not.
             StringBuilder normalizedNationalNumber = new StringBuilder();
             int countryCode = 0;
-            try
-            {
-                // TODO: This method should really just take in the string buffer that has already
-                // been created, and just remove the prefix, rather than taking in a string and then
-                // outputting a string buffer.
-                countryCode = MaybeExtractCountryCode(nationalNumber.ToString(), regionMetadata,
-                    normalizedNationalNumber, keepRawInput, phoneNumber);
-            }
-            catch (NumberParseException e)
+
+            // TODO: This method should really just take in the string buffer that has already
+            // been created, and just remove the prefix, rather than taking in a string and then
+            // outputting a string buffer.
+            var errorResult = MaybeExtractCountryCode(nationalNumber.ToString(), regionMetadata,
+                normalizedNationalNumber, keepRawInput, phoneNumber, out countryCode);
+
+            if (errorResult != ErrorType.NO_ERROR)
             {
                 var m = PLUS_CHARS_PATTERN.MatchBeginning(nationalNumber.ToString());
-                if (e.ErrorType == ErrorType.INVALID_COUNTRY_CODE &&
-                    m.Success)
+                if (errorResult == ErrorType.INVALID_COUNTRY_CODE && m.Success)
                 {
                     // Strip the plus-char, and try again.
-                    countryCode = MaybeExtractCountryCode(
+                    errorResult = MaybeExtractCountryCode(
                         nationalNumber.ToString().Substring(m.Index + m.Length),
                         regionMetadata, normalizedNationalNumber,
-                        keepRawInput, phoneNumber);
-                    if (countryCode == 0)
+                        keepRawInput, phoneNumber, out countryCode);
+                    if (errorResult != ErrorType.NO_ERROR || countryCode == 0)
                     {
-                        throw new NumberParseException(ErrorType.INVALID_COUNTRY_CODE,
-                            "Could not interpret numbers after plus-sign.");
+                        return ErrorType.INVALID_COUNTRY_CODE;
                     }
                 }
                 else
                 {
-                    throw new NumberParseException(e.ErrorType, e.Message);
+                    return errorResult;
                 }
             }
             if (countryCode != 0)
@@ -2822,8 +2826,7 @@ namespace PhoneNumbers
                 }
             }
             if (normalizedNationalNumber.Length < MIN_LENGTH_FOR_NSN)
-                throw new NumberParseException(ErrorType.TOO_SHORT_NSN,
-                    "The string supplied is too short to be a phone number.");
+                return ErrorType.TOO_SHORT_NSN;
 
             if (regionMetadata != null)
             {
@@ -2832,18 +2835,20 @@ namespace PhoneNumbers
                 if (keepRawInput)
                     phoneNumber.SetPreferredDomesticCarrierCode(carrierCode.ToString());
             }
+
             int lengthOfNationalNumber = normalizedNationalNumber.Length;
             if (lengthOfNationalNumber < MIN_LENGTH_FOR_NSN)
-                throw new NumberParseException(ErrorType.TOO_SHORT_NSN,
-                    "The string supplied is too short to be a phone number.");
+                return ErrorType.TOO_SHORT_NSN;
 
             if (lengthOfNationalNumber > MAX_LENGTH_FOR_NSN)
-                throw new NumberParseException(ErrorType.TOO_LONG,
-                    "The string supplied is too long to be a phone number.");
+                return ErrorType.TOO_LONG;
 
             if (normalizedNationalNumber[0] == '0')
                 phoneNumber.SetItalianLeadingZero(true);
+
             phoneNumber.SetNationalNumber(ulong.Parse(normalizedNationalNumber.ToString()));
+
+            return ErrorType.NO_ERROR;
         }
 
         private static bool AreEqual(PhoneNumber.Builder p1, PhoneNumber.Builder p2)
@@ -3005,40 +3010,32 @@ namespace PhoneNumbers
         */
         public MatchType IsNumberMatch(String firstNumber, String secondNumber)
         {
-            try
-            {
-                PhoneNumber firstNumberAsProto = Parse(firstNumber, UNKNOWN_REGION);
+            PhoneNumber firstNumberAsProto;
+            var result = Parse(firstNumber, UNKNOWN_REGION, out firstNumberAsProto);
+            if (result == ErrorType.NO_ERROR)
                 return IsNumberMatch(firstNumberAsProto, secondNumber);
-            }
-            catch (NumberParseException e)
+
+            if (result == ErrorType.INVALID_COUNTRY_CODE)
             {
-                if (e.ErrorType == ErrorType.INVALID_COUNTRY_CODE)
+                PhoneNumber secondNumberAsProto;
+                result = Parse(secondNumber, UNKNOWN_REGION, out secondNumberAsProto);
+                if (result == ErrorType.NO_ERROR)
+                    return IsNumberMatch(secondNumberAsProto, firstNumber);
+
+                if (result == ErrorType.INVALID_COUNTRY_CODE)
                 {
-                    try
+                    var firstNumberProto = new PhoneNumber.Builder();
+                    var secondNumberProto = new PhoneNumber.Builder();
+                    result = TryParseHelper(firstNumber, null, false, false, firstNumberProto);
+                    if (result == ErrorType.NO_ERROR)
                     {
-                        PhoneNumber secondNumberAsProto = Parse(secondNumber, UNKNOWN_REGION);
-                        return IsNumberMatch(secondNumberAsProto, firstNumber);
-                    }
-                    catch (NumberParseException e2)
-                    {
-                        if (e2.ErrorType == ErrorType.INVALID_COUNTRY_CODE)
-                        {
-                            try
-                            {
-                                var firstNumberProto = new PhoneNumber.Builder();
-                                var secondNumberProto = new PhoneNumber.Builder();
-                                ParseHelper(firstNumber, null, false, false, firstNumberProto);
-                                ParseHelper(secondNumber, null, false, false, secondNumberProto);
-                                return IsNumberMatch(firstNumberProto.Build(), secondNumberProto.Build());
-                            }
-                            catch (NumberParseException)
-                            {
-                                // Fall through and return MatchType.NOT_A_NUMBER.
-                            }
-                        }
+                        result = TryParseHelper(secondNumber, null, false, false, secondNumberProto);
+                        if (result == ErrorType.NO_ERROR)
+                            return IsNumberMatch(firstNumberProto.Build(), secondNumberProto.Build());
                     }
                 }
             }
+
             // One or more of the phone numbers we are trying to match is not a viable phone number.
             return MatchType.NOT_A_NUMBER;
         }
@@ -3057,42 +3054,38 @@ namespace PhoneNumbers
         {
             // First see if the second number has an implicit country calling code, by attempting to parse
             // it.
-            try
-            {
-                PhoneNumber secondNumberAsProto = Parse(secondNumber, UNKNOWN_REGION);
+            PhoneNumber secondNumberAsProto;
+            var result = Parse(secondNumber, UNKNOWN_REGION, out secondNumberAsProto);
+            if (result == ErrorType.NO_ERROR)
                 return IsNumberMatch(firstNumber, secondNumberAsProto);
-            }
-            catch (NumberParseException e)
+
+            if (result == ErrorType.INVALID_COUNTRY_CODE)
             {
-                if (e.ErrorType == ErrorType.INVALID_COUNTRY_CODE)
+                // The second number has no country calling code. EXACT_MATCH is no longer possible.
+                // We parse it as if the region was the same as that for the first number, and if
+                // EXACT_MATCH is returned, we replace this with NSN_MATCH.
+                String firstNumberRegion = GetRegionCodeForCountryCode(firstNumber.CountryCode);
+
+                if (!firstNumberRegion.Equals(UNKNOWN_REGION))
                 {
-                    // The second number has no country calling code. EXACT_MATCH is no longer possible.
-                    // We parse it as if the region was the same as that for the first number, and if
-                    // EXACT_MATCH is returned, we replace this with NSN_MATCH.
-                    String firstNumberRegion = GetRegionCodeForCountryCode(firstNumber.CountryCode);
-                    try
+                    PhoneNumber secondNumberWithFirstNumberRegion;
+                    result = Parse(secondNumber, firstNumberRegion, out secondNumberWithFirstNumberRegion);
+                    if (result == ErrorType.NO_ERROR)
                     {
-                        if (!firstNumberRegion.Equals(UNKNOWN_REGION))
-                        {
-                            PhoneNumber secondNumberWithFirstNumberRegion = Parse(secondNumber, firstNumberRegion);
-                            MatchType match = IsNumberMatch(firstNumber, secondNumberWithFirstNumberRegion);
-                            if (match == MatchType.EXACT_MATCH)
-                                return MatchType.NSN_MATCH;
-                            return match;
-                        }
-                        else
-                        {
-                            // If the first number didn't have a valid country calling code, then we parse the
-                            // second number without one as well.
-                            var secondNumberProto = new PhoneNumber.Builder();
-                            ParseHelper(secondNumber, null, false, false, secondNumberProto);
-                            return IsNumberMatch(firstNumber, secondNumberProto.Build());
-                        }
+                        MatchType match = IsNumberMatch(firstNumber, secondNumberWithFirstNumberRegion);
+                        if (match == MatchType.EXACT_MATCH)
+                            return MatchType.NSN_MATCH;
+                        return match;
                     }
-                    catch (NumberParseException)
-                    {
-                        // Fall-through to return NOT_A_NUMBER.
-                    }
+                }
+                else
+                {
+                    // If the first number didn't have a valid country calling code, then we parse the
+                    // second number without one as well.
+                    var secondNumberProto = new PhoneNumber.Builder();
+                    result = TryParseHelper(secondNumber, null, false, false, secondNumberProto);
+                    if (result == ErrorType.NO_ERROR)
+                        return IsNumberMatch(firstNumber, secondNumberProto.Build());
                 }
             }
             // One or more of the phone numbers we are trying to match is not a viable phone number.

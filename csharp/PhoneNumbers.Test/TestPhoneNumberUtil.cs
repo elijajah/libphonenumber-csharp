@@ -34,7 +34,7 @@ namespace PhoneNumbers.Test
     * @author Lara Rennie
     */
     [TestFixture]
-    class TestPhoneNumberUtil: TestMetadataTestCase
+    class TestPhoneNumberUtil : TestMetadataTestCase
     {
         // Set up some test numbers to re-use.
         private static readonly PhoneNumber ALPHA_NUMERIC_NUMBER =
@@ -874,117 +874,131 @@ namespace PhoneNumbers.Test
         [Test]
         public void TestFormatInOriginalFormat()
         {
-            PhoneNumber number1 = phoneUtil.ParseAndKeepRawInput("+442087654321", RegionCode.GB);
+            PhoneNumber number1;
+            phoneUtil.ParseAndKeepRawInput("+442087654321", RegionCode.GB, out number1);
             Assert.AreEqual("+44 20 8765 4321", phoneUtil.FormatInOriginalFormat(number1, RegionCode.GB));
 
-            PhoneNumber number2 = phoneUtil.ParseAndKeepRawInput("02087654321", RegionCode.GB);
+            PhoneNumber number2;
+            phoneUtil.ParseAndKeepRawInput("02087654321", RegionCode.GB, out number2);
             Assert.AreEqual("(020) 8765 4321", phoneUtil.FormatInOriginalFormat(number2, RegionCode.GB));
 
-            PhoneNumber number3 = phoneUtil.ParseAndKeepRawInput("011442087654321", RegionCode.US);
+            PhoneNumber number3;
+            phoneUtil.ParseAndKeepRawInput("011442087654321", RegionCode.US, out number3);
             Assert.AreEqual("011 44 20 8765 4321", phoneUtil.FormatInOriginalFormat(number3, RegionCode.US));
 
-            PhoneNumber number4 = phoneUtil.ParseAndKeepRawInput("442087654321", RegionCode.GB);
+            PhoneNumber number4;
+            phoneUtil.ParseAndKeepRawInput("442087654321", RegionCode.GB, out number4);
             Assert.AreEqual("44 20 8765 4321", phoneUtil.FormatInOriginalFormat(number4, RegionCode.GB));
 
-            PhoneNumber number5 = phoneUtil.Parse("+442087654321", RegionCode.GB);
+            PhoneNumber number5;
+            phoneUtil.Parse("+442087654321", RegionCode.GB, out number5);
             Assert.AreEqual("(020) 8765 4321", phoneUtil.FormatInOriginalFormat(number5, RegionCode.GB));
 
             // Invalid numbers that we have a formatting pattern for should be formatted properly. Note area
             // codes starting with 7 are intentionally excluded in the test metadata for testing purposes.
-            PhoneNumber number6 = phoneUtil.ParseAndKeepRawInput("7345678901", RegionCode.US);
+            PhoneNumber number6;
+            phoneUtil.ParseAndKeepRawInput("7345678901", RegionCode.US, out number6);
             Assert.AreEqual("734 567 8901", phoneUtil.FormatInOriginalFormat(number6, RegionCode.US));
 
             // US is not a leading zero country, and the presence of the leading zero leads us to format the
             // number using raw_input.
-            PhoneNumber number7 = phoneUtil.ParseAndKeepRawInput("0734567 8901", RegionCode.US);
+            PhoneNumber number7;
+            phoneUtil.ParseAndKeepRawInput("0734567 8901", RegionCode.US, out number7);
             Assert.AreEqual("0734567 8901", phoneUtil.FormatInOriginalFormat(number7, RegionCode.US));
 
             // This number is valid, but we don't have a formatting pattern for it. Fall back to the raw
             // input.
-            PhoneNumber number8 = phoneUtil.ParseAndKeepRawInput("02-4567-8900", RegionCode.KR);
+            PhoneNumber number8;
+            phoneUtil.ParseAndKeepRawInput("02-4567-8900", RegionCode.KR, out number8);
             Assert.AreEqual("02-4567-8900", phoneUtil.FormatInOriginalFormat(number8, RegionCode.KR));
 
-            PhoneNumber number9 = phoneUtil.ParseAndKeepRawInput("01180012345678", RegionCode.US);
+            PhoneNumber number9;
+            phoneUtil.ParseAndKeepRawInput("01180012345678", RegionCode.US, out number9);
             Assert.AreEqual("011 800 1234 5678", phoneUtil.FormatInOriginalFormat(number9, RegionCode.US));
 
-            PhoneNumber number10 = phoneUtil.ParseAndKeepRawInput("+80012345678", RegionCode.KR);
+            PhoneNumber number10;
+            phoneUtil.ParseAndKeepRawInput("+80012345678", RegionCode.KR, out number10);
             Assert.AreEqual("+800 1234 5678", phoneUtil.FormatInOriginalFormat(number10, RegionCode.KR));
 
             // US local numbers are formatted correctly, as we have formatting patterns for them.
-            PhoneNumber localNumberUS = phoneUtil.ParseAndKeepRawInput("2530000", RegionCode.US);
+            PhoneNumber localNumberUS;
+            phoneUtil.ParseAndKeepRawInput("2530000", RegionCode.US, out localNumberUS);
             Assert.AreEqual("253 0000", phoneUtil.FormatInOriginalFormat(localNumberUS, RegionCode.US));
 
-            PhoneNumber numberWithNationalPrefixUS =
-            phoneUtil.ParseAndKeepRawInput("18003456789", RegionCode.US);
+            PhoneNumber numberWithNationalPrefixUS;
+            phoneUtil.ParseAndKeepRawInput("18003456789", RegionCode.US, out numberWithNationalPrefixUS);
             Assert.AreEqual("1 800 345 6789",
             phoneUtil.FormatInOriginalFormat(numberWithNationalPrefixUS, RegionCode.US));
 
-            PhoneNumber numberWithoutNationalPrefixGB =
-            phoneUtil.ParseAndKeepRawInput("2087654321", RegionCode.GB);
+            PhoneNumber numberWithoutNationalPrefixGB;
+            phoneUtil.ParseAndKeepRawInput("2087654321", RegionCode.GB, out numberWithoutNationalPrefixGB);
             Assert.AreEqual("20 8765 4321",
             phoneUtil.FormatInOriginalFormat(numberWithoutNationalPrefixGB, RegionCode.GB));
             // Make sure no metadata is modified as a result of the previous function call.
             Assert.AreEqual("(020) 8765 4321", phoneUtil.FormatInOriginalFormat(number5, RegionCode.GB));
 
-            PhoneNumber numberWithNationalPrefixMX =
-            phoneUtil.ParseAndKeepRawInput("013312345678", RegionCode.MX);
+            PhoneNumber numberWithNationalPrefixMX;
+            phoneUtil.ParseAndKeepRawInput("013312345678", RegionCode.MX, out numberWithNationalPrefixMX);
             Assert.AreEqual("01 33 1234 5678",
             phoneUtil.FormatInOriginalFormat(numberWithNationalPrefixMX, RegionCode.MX));
 
-            PhoneNumber numberWithoutNationalPrefixMX =
-            phoneUtil.ParseAndKeepRawInput("3312345678", RegionCode.MX);
+            PhoneNumber numberWithoutNationalPrefixMX;
+            phoneUtil.ParseAndKeepRawInput("3312345678", RegionCode.MX, out numberWithoutNationalPrefixMX);
             Assert.AreEqual("33 1234 5678",
             phoneUtil.FormatInOriginalFormat(numberWithoutNationalPrefixMX, RegionCode.MX));
 
-            PhoneNumber italianFixedLineNumber =
-            phoneUtil.ParseAndKeepRawInput("0212345678", RegionCode.IT);
+            PhoneNumber italianFixedLineNumber;
+            phoneUtil.ParseAndKeepRawInput("0212345678", RegionCode.IT, out italianFixedLineNumber);
             Assert.AreEqual("02 1234 5678",
             phoneUtil.FormatInOriginalFormat(italianFixedLineNumber, RegionCode.IT));
 
-            PhoneNumber numberWithNationalPrefixJP =
-            phoneUtil.ParseAndKeepRawInput("00777012", RegionCode.JP);
+            PhoneNumber numberWithNationalPrefixJP;
+            phoneUtil.ParseAndKeepRawInput("00777012", RegionCode.JP, out numberWithNationalPrefixJP);
             Assert.AreEqual("0077-7012",
             phoneUtil.FormatInOriginalFormat(numberWithNationalPrefixJP, RegionCode.JP));
 
-            PhoneNumber numberWithoutNationalPrefixJP =
-            phoneUtil.ParseAndKeepRawInput("0777012", RegionCode.JP);
+            PhoneNumber numberWithoutNationalPrefixJP;
+            phoneUtil.ParseAndKeepRawInput("0777012", RegionCode.JP, out numberWithoutNationalPrefixJP);
             Assert.AreEqual("0777012",
             phoneUtil.FormatInOriginalFormat(numberWithoutNationalPrefixJP, RegionCode.JP));
 
-            PhoneNumber numberWithCarrierCodeBR =
-            phoneUtil.ParseAndKeepRawInput("012 3121286979", RegionCode.BR);
+            PhoneNumber numberWithCarrierCodeBR;
+            phoneUtil.ParseAndKeepRawInput("012 3121286979", RegionCode.BR, out numberWithCarrierCodeBR);
             Assert.AreEqual("012 3121286979",
             phoneUtil.FormatInOriginalFormat(numberWithCarrierCodeBR, RegionCode.BR));
 
             // The default national prefix used in this case is 045. When a number with national prefix 044
             // is entered, we return the raw input as we don't want to change the number entered.
-            PhoneNumber numberWithNationalPrefixMX1 =
-            phoneUtil.ParseAndKeepRawInput("044(33)1234-5678", RegionCode.MX);
+            PhoneNumber numberWithNationalPrefixMX1;
+            phoneUtil.ParseAndKeepRawInput("044(33)1234-5678", RegionCode.MX, out numberWithNationalPrefixMX1);
             Assert.AreEqual("044(33)1234-5678",
             phoneUtil.FormatInOriginalFormat(numberWithNationalPrefixMX1, RegionCode.MX));
 
-            PhoneNumber numberWithNationalPrefixMX2 =
-            phoneUtil.ParseAndKeepRawInput("045(33)1234-5678", RegionCode.MX);
+            PhoneNumber numberWithNationalPrefixMX2;
+            phoneUtil.ParseAndKeepRawInput("045(33)1234-5678", RegionCode.MX, out numberWithNationalPrefixMX2);
             Assert.AreEqual("045 33 1234 5678",
             phoneUtil.FormatInOriginalFormat(numberWithNationalPrefixMX2, RegionCode.MX));
 
             // The default international prefix used in this case is 0011. When a number with international
             // prefix 0012 is entered, we return the raw input as we don't want to change the number
             // entered.
-            PhoneNumber outOfCountryNumberFromAU1 =
-            phoneUtil.ParseAndKeepRawInput("0012 16502530000", RegionCode.AU);
+            PhoneNumber outOfCountryNumberFromAU1;
+            phoneUtil.ParseAndKeepRawInput("0012 16502530000", RegionCode.AU, out outOfCountryNumberFromAU1);
             Assert.AreEqual("0012 16502530000",
             phoneUtil.FormatInOriginalFormat(outOfCountryNumberFromAU1, RegionCode.AU));
 
-            PhoneNumber outOfCountryNumberFromAU2 =
-            phoneUtil.ParseAndKeepRawInput("0011 16502530000", RegionCode.AU);
+            PhoneNumber outOfCountryNumberFromAU2;
+            phoneUtil.ParseAndKeepRawInput("0011 16502530000", RegionCode.AU, out outOfCountryNumberFromAU2);
             Assert.AreEqual("0011 1 650 253 0000",
             phoneUtil.FormatInOriginalFormat(outOfCountryNumberFromAU2, RegionCode.AU));
 
             // Test the star sign is not removed from or added to the original input by this method.
-            PhoneNumber starNumber = phoneUtil.ParseAndKeepRawInput("*1234", RegionCode.JP);
+            PhoneNumber starNumber;
+            phoneUtil.ParseAndKeepRawInput("*1234", RegionCode.JP, out starNumber);
             Assert.AreEqual("*1234", phoneUtil.FormatInOriginalFormat(starNumber, RegionCode.JP));
-            PhoneNumber numberWithoutStar = phoneUtil.ParseAndKeepRawInput("1234", RegionCode.JP);
+
+            PhoneNumber numberWithoutStar;
+            phoneUtil.ParseAndKeepRawInput("1234", RegionCode.JP, out numberWithoutStar);
             Assert.AreEqual("1234", phoneUtil.FormatInOriginalFormat(numberWithoutStar, RegionCode.JP));
         }
 
@@ -1400,7 +1414,7 @@ namespace PhoneNumbers.Test
             // Only one or two digits before strange non-possible punctuation.
             Assert.False(PhoneNumberUtil.IsViablePhoneNumber("1+1+1"));
             Assert.False(PhoneNumberUtil.IsViablePhoneNumber("80+0"));
-             // Two digits is viable.
+            // Two digits is viable.
             Assert.True(PhoneNumberUtil.IsViablePhoneNumber("00"));
             Assert.That(PhoneNumberUtil.IsViablePhoneNumber("111"));
             // Alpha numbers.
@@ -1569,233 +1583,210 @@ namespace PhoneNumbers.Test
             var number = new PhoneNumber.Builder();
             PhoneMetadata metadata = phoneUtil.GetMetadataForRegion(RegionCode.US);
             // Note that for the US, the IDD is 011.
-            try
-            {
-                String phoneNumber = "011112-3456789";
-                String strippedNumber = "123456789";
-                int countryCallingCode = 1;
-                StringBuilder numberToFill = new StringBuilder();
-                Assert.AreEqual(countryCallingCode,
-                    phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number),
-                    "Did not extract country calling code " + countryCallingCode + " correctly.");
-                Assert.AreEqual(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_IDD, number.CountryCodeSource,
-                    "Did not figure out CountryCodeSource correctly");
-                // Should strip and normalize national significant number.
-                Assert.AreEqual(strippedNumber,
-                    numberToFill.ToString(),
-                    "Did not strip off the country calling code correctly.");
-            }
-            catch (NumberParseException e)
-            {
-                Assert.Fail("Should not have thrown an exception: " + e.ToString());
-            }
-            number = new PhoneNumber.Builder();
-            try
-            {
-                String phoneNumber = "+6423456789";
-                int countryCallingCode = 64;
-                StringBuilder numberToFill = new StringBuilder();
-                Assert.AreEqual(countryCallingCode,
-                    phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number),
-                    "Did not extract country calling code " + countryCallingCode + " correctly.");
-                Assert.AreEqual(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_PLUS_SIGN, number.CountryCodeSource,
-                    "Did not figure out CountryCodeSource correctly");
-            }
-            catch (NumberParseException e)
-            {
-                Assert.Fail("Should not have thrown an exception: " + e.ToString());
-            }
-            number = new PhoneNumber.Builder();
-            try
-            {
-                String phoneNumber = "+80012345678";
-                int countryCallingCode = 800;
-                StringBuilder numberToFill = new StringBuilder();
-                Assert.AreEqual(countryCallingCode,
-                   phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number),
-                   "Did not extract country calling code " + countryCallingCode + " correctly.");
-                Assert.AreEqual(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_PLUS_SIGN, number.CountryCodeSource,
-                    "Did not figure out CountryCodeSource correctly");
-            }
-            catch (NumberParseException e)
-            {
-                Assert.Fail("Should not have thrown an exception: " + e.ToString());
-            }
-            number = new PhoneNumber.Builder();
-            try
-            {
-                String phoneNumber = "2345-6789";
-                StringBuilder numberToFill = new StringBuilder();
-                Assert.AreEqual(
-                0,
-                phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number),
-                "Should not have extracted a country calling code - no international prefix present.");
-                Assert.AreEqual(
-                PhoneNumber.Types.CountryCodeSource.FROM_DEFAULT_COUNTRY, number.CountryCodeSource,
+            String phoneNumber = "011112-3456789";
+            String strippedNumber = "123456789";
+            int countryCallingCode = 1;
+            StringBuilder numberToFill = new StringBuilder();
+            int resultingCountryCallingCode;
+            phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number,
+                out resultingCountryCallingCode);
+            Assert.AreEqual(countryCallingCode, resultingCountryCallingCode,
+                "Did not extract country calling code " + countryCallingCode + " correctly.");
+            Assert.AreEqual(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_IDD, number.CountryCodeSource,
                 "Did not figure out CountryCodeSource correctly");
-            }
-            catch (NumberParseException e)
-            {
-                Assert.Fail("Should not have thrown an exception: " + e.ToString());
-            }
+            // Should strip and normalize national significant number.
+            Assert.AreEqual(strippedNumber,
+                numberToFill.ToString(),
+                "Did not strip off the country calling code correctly.");
+
             number = new PhoneNumber.Builder();
-            try
-            {
-                String phoneNumber = "0119991123456789";
-                StringBuilder numberToFill = new StringBuilder();
-                phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number);
-                Assert.Fail("Should have thrown an exception, no valid country calling code present.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected.
-                Assert.AreEqual(
-                ErrorType.INVALID_COUNTRY_CODE,
-                e.ErrorType,
-                "Wrong error type stored in exception.");
-            }
-            number = new PhoneNumber.Builder();
-            try
-            {
-                String phoneNumber = "(1 610) 619 4466";
-                int countryCallingCode = 1;
-                StringBuilder numberToFill = new StringBuilder();
-                Assert.AreEqual(
-                countryCallingCode,
-                phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true,
-                number),
-                "Should have extracted the country calling code of the region passed in");
-                Assert.AreEqual(
-                PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITHOUT_PLUS_SIGN,
-                number.CountryCodeSource,
+            phoneNumber = "+6423456789";
+            countryCallingCode = 64;
+            numberToFill = new StringBuilder();
+            phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number,
+                out resultingCountryCallingCode);
+            Assert.AreEqual(countryCallingCode, resultingCountryCallingCode,
+                "Did not extract country calling code " + countryCallingCode + " correctly.");
+            Assert.AreEqual(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_PLUS_SIGN, number.CountryCodeSource,
                 "Did not figure out CountryCodeSource correctly");
-            }
-            catch (NumberParseException e)
-            {
-                Assert.Fail("Should not have thrown an exception: " + e.ToString());
-            }
+
             number = new PhoneNumber.Builder();
-            try
-            {
-                String phoneNumber = "(1 610) 619 4466";
-                int countryCallingCode = 1;
-                StringBuilder numberToFill = new StringBuilder();
-                Assert.AreEqual(
-                countryCallingCode,
-                phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, false,
-                number),
-                "Should have extracted the country calling code of the region passed in");
-                Assert.False(number.HasCountryCodeSource, "Should not contain CountryCodeSource.");
-            }
-            catch (NumberParseException e)
-            {
-                Assert.Fail("Should not have thrown an exception: " + e.ToString());
-            }
-            number = new PhoneNumber.Builder();
-            try
-            {
-                String phoneNumber = "(1 610) 619 446";
-                StringBuilder numberToFill = new StringBuilder();
-                Assert.AreEqual(
-                0,
-                phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, false,
-                number),
-                "Should not have extracted a country calling code - invalid number after " +
-                "extraction of uncertain country calling code.");
-                Assert.False(number.HasCountryCodeSource, "Should not contain CountryCodeSource.");
-            }
-            catch (NumberParseException e)
-            {
-                Assert.Fail("Should not have thrown an exception: " + e.ToString());
-            }
-            number = new PhoneNumber.Builder();
-            try
-            {
-                String phoneNumber = "(1 610) 619";
-                StringBuilder numberToFill = new StringBuilder();
-                Assert.AreEqual(
-                0,
-                phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true,
-                number),
-                "Should not have extracted a country calling code - too short number both " +
-                "before and after extraction of uncertain country calling code.");
-                Assert.AreEqual(
-                PhoneNumber.Types.CountryCodeSource.FROM_DEFAULT_COUNTRY, number.CountryCodeSource,
+            phoneNumber = "+80012345678";
+            countryCallingCode = 800;
+            numberToFill = new StringBuilder();
+            phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number, out resultingCountryCallingCode);
+            Assert.AreEqual(countryCallingCode, resultingCountryCallingCode,
+               "Did not extract country calling code " + countryCallingCode + " correctly.");
+            Assert.AreEqual(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_PLUS_SIGN, number.CountryCodeSource,
                 "Did not figure out CountryCodeSource correctly");
-            }
-            catch (NumberParseException e)
-            {
-                Assert.Fail("Should not have thrown an exception: " + e.ToString());
-            }
+
+            number = new PhoneNumber.Builder();
+            phoneNumber = "2345-6789";
+            numberToFill = new StringBuilder();
+            phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number,
+                out resultingCountryCallingCode);
+            Assert.AreEqual(0, resultingCountryCallingCode,
+            "Should not have extracted a country calling code - no international prefix present.");
+            Assert.AreEqual(
+            PhoneNumber.Types.CountryCodeSource.FROM_DEFAULT_COUNTRY, number.CountryCodeSource,
+            "Did not figure out CountryCodeSource correctly");
+
+            number = new PhoneNumber.Builder();
+            phoneNumber = "0119991123456789";
+            numberToFill = new StringBuilder();
+            var result = phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number, out resultingCountryCallingCode);
+
+            // Expected.
+            Assert.AreEqual(
+            ErrorType.INVALID_COUNTRY_CODE,
+            result,
+            "Wrong error type.");
+
+            number = new PhoneNumber.Builder();
+            phoneNumber = "(1 610) 619 4466";
+            countryCallingCode = 1;
+            numberToFill = new StringBuilder();
+            phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true, number,
+                out resultingCountryCallingCode);
+            Assert.AreEqual(
+            countryCallingCode, resultingCountryCallingCode,
+            "Should have extracted the country calling code of the region passed in");
+
+            Assert.AreEqual(
+            PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITHOUT_PLUS_SIGN,
+            number.CountryCodeSource,
+            "Did not figure out CountryCodeSource correctly");
+
+
+            number = new PhoneNumber.Builder();
+            phoneNumber = "(1 610) 619 4466";
+            countryCallingCode = 1;
+            numberToFill = new StringBuilder();
+            phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, false,
+                number, out resultingCountryCallingCode);
+            Assert.AreEqual(
+            countryCallingCode, resultingCountryCallingCode,
+            "Should have extracted the country calling code of the region passed in");
+            Assert.False(number.HasCountryCodeSource, "Should not contain CountryCodeSource.");
+
+            number = new PhoneNumber.Builder();
+            phoneNumber = "(1 610) 619 446";
+            numberToFill = new StringBuilder();
+            phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, false,
+                number, out resultingCountryCallingCode);
+            Assert.AreEqual(
+            0, resultingCountryCallingCode,
+            "Should not have extracted a country calling code - invalid number after " +
+            "extraction of uncertain country calling code.");
+            Assert.False(number.HasCountryCodeSource, "Should not contain CountryCodeSource.");
+
+            number = new PhoneNumber.Builder();
+            phoneNumber = "(1 610) 619";
+            numberToFill = new StringBuilder();
+            phoneUtil.MaybeExtractCountryCode(phoneNumber, metadata, numberToFill, true,
+                number, out resultingCountryCallingCode);
+            Assert.AreEqual(
+            0,
+            resultingCountryCallingCode,
+            "Should not have extracted a country calling code - too short number both " +
+            "before and after extraction of uncertain country calling code.");
+            Assert.AreEqual(
+            PhoneNumber.Types.CountryCodeSource.FROM_DEFAULT_COUNTRY, number.CountryCodeSource,
+            "Did not figure out CountryCodeSource correctly");
         }
 
         [Test]
         public void TestParseNationalNumber()
         {
+            PhoneNumber num;
+
             // National prefix attached.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("033316005", RegionCode.NZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("33316005", RegionCode.NZ));
+            phoneUtil.Parse("033316005", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("33316005", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
             // National prefix attached and some formatting present.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("03-331 6005", RegionCode.NZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("03 331 6005", RegionCode.NZ));
+            phoneUtil.Parse("03-331 6005", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("03 331 6005", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
             // Test parsing RFC3966 format with a phone context.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("tel:03-331-6005;phone-context=+64", RegionCode.NZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("tel:331-6005;phone-context=+64-3", RegionCode.NZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("tel:331-6005;phone-context=+64-3", RegionCode.US));
+            phoneUtil.Parse("tel:03-331-6005;phone-context=+64", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("tel:331-6005;phone-context=+64-3", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("tel:331-6005;phone-context=+64-3", RegionCode.US, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
 
             // Test parsing RFC3966 format with optional user-defined parameters. The parameters will appear
             // after the context if present.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("tel:03-331-6005;phone-context=+64;a=%A1",
-                RegionCode.NZ));
+            phoneUtil.Parse("tel:03-331-6005;phone-context=+64;a=%A1",
+                RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
             // Test parsing RFC3966 with an ISDN subaddress.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("tel:03-331-6005;isub=12345;phone-context=+64",
-                RegionCode.NZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("tel:+64-3-331-6005;isub=12345", RegionCode.NZ));
+            phoneUtil.Parse("tel:03-331-6005;isub=12345;phone-context=+64",
+                RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("tel:+64-3-331-6005;isub=12345", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
 
             // Testing international prefixes.
             // Should strip country calling code.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("0064 3 331 6005", RegionCode.NZ));
+            phoneUtil.Parse("0064 3 331 6005", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
             // Try again, but this time we have an international number with Region Code US. It should
             // recognise the country calling code and parse accordingly.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("01164 3 331 6005", RegionCode.US));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("+64 3 331 6005", RegionCode.US));
+            phoneUtil.Parse("01164 3 331 6005", RegionCode.US, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("+64 3 331 6005", RegionCode.US, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
 
             // We should ignore the leading plus here, since it is not followed by a valid country code but
             // instead is followed by the IDD for the US.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("+01164 3 331 6005", RegionCode.US));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("+0064 3 331 6005", RegionCode.NZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("+ 00 64 3 331 6005", RegionCode.NZ));
+            phoneUtil.Parse("+01164 3 331 6005", RegionCode.US, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("+0064 3 331 6005", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("+ 00 64 3 331 6005", RegionCode.NZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
 
+            phoneUtil.Parse("tel:253-0000;phone-context=www.google.com", RegionCode.US, out num);
             Assert.AreEqual(US_LOCAL_NUMBER,
-                phoneUtil.Parse("tel:253-0000;phone-context=www.google.com", RegionCode.US));
-            Assert.AreEqual(US_LOCAL_NUMBER,
-                phoneUtil.Parse("tel:253-0000;isub=12345;phone-context=www.google.com", RegionCode.US));
+                num);
+            phoneUtil.Parse("tel:253-0000;isub=12345;phone-context=www.google.com", RegionCode.US, out num);
+            Assert.AreEqual(US_LOCAL_NUMBER, num);
             // This is invalid because no "+" sign is present as part of phone-context. The phone context
             // is simply ignored in this case just as if it contains a domain.
-            Assert.AreEqual(US_LOCAL_NUMBER,
-                phoneUtil.Parse("tel:2530000;isub=12345;phone-context=1-650", RegionCode.US));
-            Assert.AreEqual(US_LOCAL_NUMBER,
-                phoneUtil.Parse("tel:2530000;isub=12345;phone-context=1234.com", RegionCode.US));
+            phoneUtil.Parse("tel:2530000;isub=12345;phone-context=1-650", RegionCode.US, out num);
+            Assert.AreEqual(US_LOCAL_NUMBER, num);
+            phoneUtil.Parse("tel:2530000;isub=12345;phone-context=1234.com", RegionCode.US, out num);
+            Assert.AreEqual(US_LOCAL_NUMBER, num);
 
             PhoneNumber nzNumber = new PhoneNumber.Builder()
                 .SetCountryCode(64).SetNationalNumber(64123456L).Build();
-            Assert.AreEqual(nzNumber, phoneUtil.Parse("64(0)64123456", RegionCode.NZ));
+
+            phoneUtil.Parse("64(0)64123456", RegionCode.NZ, out num);
+            Assert.AreEqual(nzNumber, num);
             // Check that using a "/" is fine in a phone number.
-            Assert.AreEqual(DE_NUMBER, phoneUtil.Parse("301/23456", RegionCode.DE));
+            phoneUtil.Parse("301/23456", RegionCode.DE, out num);
+            Assert.AreEqual(DE_NUMBER, num);
 
             // Check it doesn't use the '1' as a country calling code when parsing if the phone number was
             // already possible.
             PhoneNumber usNumber = new PhoneNumber.Builder()
                 .SetCountryCode(1).SetNationalNumber(1234567890L).Build();
-            Assert.AreEqual(usNumber, phoneUtil.Parse("123-456-7890", RegionCode.US));
+            phoneUtil.Parse("123-456-7890", RegionCode.US, out num);
+            Assert.AreEqual(usNumber, num);
 
             // Test star numbers. Although this is not strictly valid, we would like to make sure we can
             // parse the output we produce when formatting the number.
-            Assert.AreEqual(JP_STAR_NUMBER, phoneUtil.Parse("+81 *2345", RegionCode.JP));
+            phoneUtil.Parse("+81 *2345", RegionCode.JP, out num);
+            Assert.AreEqual(JP_STAR_NUMBER, num);
 
             PhoneNumber shortNumber = new PhoneNumber.Builder()
                 .SetCountryCode(64).SetNationalNumber(12L).Build();
-            Assert.AreEqual(shortNumber, phoneUtil.Parse("12", RegionCode.NZ));
+            phoneUtil.Parse("12", RegionCode.NZ, out num);
+            Assert.AreEqual(shortNumber, num);
         }
 
         [Test]
@@ -1804,15 +1795,22 @@ namespace PhoneNumbers.Test
             // Test case with alpha characters.
             PhoneNumber tollfreeNumber = new PhoneNumber.Builder()
                 .SetCountryCode(64).SetNationalNumber(800332005L).Build();
-            Assert.AreEqual(tollfreeNumber, phoneUtil.Parse("0800 DDA 005", RegionCode.NZ));
+            PhoneNumber num;
+            phoneUtil.Parse("0800 DDA 005", RegionCode.NZ, out num);
+            Assert.AreEqual(tollfreeNumber, num);
             PhoneNumber premiumNumber = new PhoneNumber.Builder()
                 .SetCountryCode(64).SetNationalNumber(9003326005L).Build();
-            Assert.AreEqual(premiumNumber, phoneUtil.Parse("0900 DDA 6005", RegionCode.NZ));
+            phoneUtil.Parse("0900 DDA 6005", RegionCode.NZ, out num);
+            Assert.AreEqual(premiumNumber, num);
             // Not enough alpha characters for them to be considered intentional, so they are stripped.
-            Assert.AreEqual(premiumNumber, phoneUtil.Parse("0900 332 6005a", RegionCode.NZ));
-            Assert.AreEqual(premiumNumber, phoneUtil.Parse("0900 332 600a5", RegionCode.NZ));
-            Assert.AreEqual(premiumNumber, phoneUtil.Parse("0900 332 600A5", RegionCode.NZ));
-            Assert.AreEqual(premiumNumber, phoneUtil.Parse("0900 a332 600A5", RegionCode.NZ));
+            phoneUtil.Parse("0900 332 6005a", RegionCode.NZ, out num);
+            Assert.AreEqual(premiumNumber, num);
+            phoneUtil.Parse("0900 332 600a5", RegionCode.NZ, out num);
+            Assert.AreEqual(premiumNumber, num);
+            phoneUtil.Parse("0900 332 600A5", RegionCode.NZ, out num);
+            Assert.AreEqual(premiumNumber, num);
+            phoneUtil.Parse("0900 a332 600A5", RegionCode.NZ, out num);
+            Assert.AreEqual(premiumNumber, num);
         }
 
         [Test]
@@ -1820,88 +1818,97 @@ namespace PhoneNumbers.Test
         {
             // Lots of leading + signs before the possible number.
             StringBuilder maliciousNumber = new StringBuilder(6000);
-            for(int i = 0; i < 6000; i++)
+            for (int i = 0; i < 6000; i++)
                 maliciousNumber.Append('+');
             maliciousNumber.Append("12222-33-244 extensioB 343+");
-            try
-            {
-                phoneUtil.Parse(maliciousNumber.ToString(), RegionCode.US);
-                Assert.Fail("This should not parse without throwing an exception " + maliciousNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(ErrorType.TOO_LONG,
-                           e.ErrorType,
-                           "Wrong error type stored in exception.");
-            }
+            PhoneNumber num;
+            var result = phoneUtil.Parse(maliciousNumber.ToString(), RegionCode.US, out num);
+            // Expected this exception.
+            Assert.AreEqual(ErrorType.TOO_LONG,
+                       result,
+                       "Wrong error type.");
+
             StringBuilder maliciousNumberWithAlmostExt = new StringBuilder(6000);
-            for(int i = 0; i < 350; i++)
+            for (int i = 0; i < 350; i++)
                 maliciousNumberWithAlmostExt.Append("200");
             maliciousNumberWithAlmostExt.Append(" extensiOB 345");
-            try
-            {
-                phoneUtil.Parse(maliciousNumberWithAlmostExt.ToString(), RegionCode.US);
-                Assert.Fail("This should not parse without throwing an exception " + maliciousNumberWithAlmostExt);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(ErrorType.TOO_LONG,
-                           e.ErrorType,
-                           "Wrong error type stored in exception.");
-            }
+
+
+            result = phoneUtil.Parse(maliciousNumberWithAlmostExt.ToString(), RegionCode.US, out num);
+            Assert.AreEqual(ErrorType.TOO_LONG,
+                       result,
+                       "Wrong error type.");
         }
 
         [Test]
         public void TestParseWithInternationalPrefixes()
         {
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("+1 (650) 253-0000", RegionCode.NZ));
-            Assert.AreEqual(INTERNATIONAL_TOLL_FREE, phoneUtil.Parse("011 800 1234 5678", RegionCode.US));
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("1-650-253-0000", RegionCode.US));
+            PhoneNumber num;
+            phoneUtil.Parse("+1 (650) 253-0000", RegionCode.NZ, out num);
+            Assert.AreEqual(US_NUMBER, num);
+            phoneUtil.Parse("011 800 1234 5678", RegionCode.US, out num);
+            Assert.AreEqual(INTERNATIONAL_TOLL_FREE, num);
+            phoneUtil.Parse("1-650-253-0000", RegionCode.US, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // Calling the US number from Singapore by using different service providers
             // 1st test: calling using SingTel IDD service (IDD is 001)
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("0011-650-253-0000", RegionCode.SG));
+            phoneUtil.Parse("0011-650-253-0000", RegionCode.SG, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // 2nd test: calling using StarHub IDD service (IDD is 008)
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("0081-650-253-0000", RegionCode.SG));
+            phoneUtil.Parse("0081-650-253-0000", RegionCode.SG, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // 3rd test: calling using SingTel V019 service (IDD is 019)
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("0191-650-253-0000", RegionCode.SG));
+            phoneUtil.Parse("0191-650-253-0000", RegionCode.SG, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // Calling the US number from Poland
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("0~01-650-253-0000", RegionCode.PL));
+            phoneUtil.Parse("0~01-650-253-0000", RegionCode.PL, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // Using "++" at the start.
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("++1 (650) 253-0000", RegionCode.PL));
+            phoneUtil.Parse("++1 (650) 253-0000", RegionCode.PL, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // Using a very strange decimal digit range (Mongolian digits).
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("\u1811 \u1816\u1815\u1810 " +
-                "\u1812\u1815\u1813 \u1810\u1810\u1810\u1810",
-                RegionCode.US));
+            phoneUtil.Parse("\u1811 \u1816\u1815\u1810 " +
+                            "\u1812\u1815\u1813 \u1810\u1810\u1810\u1810",
+                RegionCode.US, out num);
+            Assert.AreEqual(US_NUMBER, num);
         }
 
         [Test]
         public void TestParseNonAscii()
         {
             // Using a full-width plus sign.
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("\uFF0B1 (650) 253-0000", RegionCode.SG));
+            PhoneNumber num;
+            phoneUtil.Parse("\uFF0B1 (650) 253-0000", RegionCode.SG, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // Using a soft hyphen U+00AD.
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("1 (650) 253\u00AD-0000", RegionCode.US));
+            phoneUtil.Parse("1 (650) 253\u00AD-0000", RegionCode.US, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // The whole number, including punctuation, is here represented in full-width form.
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("\uFF0B\uFF11\u3000\uFF08\uFF16\uFF15\uFF10\uFF09" +
-                                                "\u3000\uFF12\uFF15\uFF13\uFF0D\uFF10\uFF10\uFF10" +
-                                                "\uFF10",
-                                                RegionCode.SG));
+            phoneUtil.Parse("\uFF0B\uFF11\u3000\uFF08\uFF16\uFF15\uFF10\uFF09" +
+                            "\u3000\uFF12\uFF15\uFF13\uFF0D\uFF10\uFF10\uFF10" +
+                            "\uFF10",
+                RegionCode.SG, out num);
+            Assert.AreEqual(US_NUMBER, num);
             // Using U+30FC dash instead.
-            Assert.AreEqual(US_NUMBER, phoneUtil.Parse("\uFF0B\uFF11\u3000\uFF08\uFF16\uFF15\uFF10\uFF09" +
-                                                "\u3000\uFF12\uFF15\uFF13\u30FC\uFF10\uFF10\uFF10" +
-                                                "\uFF10",
-                                                RegionCode.SG));
+            phoneUtil.Parse("\uFF0B\uFF11\u3000\uFF08\uFF16\uFF15\uFF10\uFF09" +
+                            "\u3000\uFF12\uFF15\uFF13\u30FC\uFF10\uFF10\uFF10" +
+                            "\uFF10",
+                RegionCode.SG, out num);
+            Assert.AreEqual(US_NUMBER, num);
         }
+
+
 
         [Test]
         public void TestParseWithLeadingZero()
         {
-            Assert.AreEqual(IT_NUMBER, phoneUtil.Parse("+39 02-36618 300", RegionCode.NZ));
-            Assert.AreEqual(IT_NUMBER, phoneUtil.Parse("02-36618 300", RegionCode.IT));
-
-            Assert.AreEqual(IT_MOBILE, phoneUtil.Parse("345 678 901", RegionCode.IT));
+            PhoneNumber num;
+            phoneUtil.Parse("+39 02-36618 300", RegionCode.NZ, out num);
+            Assert.AreEqual(IT_NUMBER, num);
+            phoneUtil.Parse("02-36618 300", RegionCode.IT, out num);
+            Assert.AreEqual(IT_NUMBER, num);
+            phoneUtil.Parse("345 678 901", RegionCode.IT, out num);
+            Assert.AreEqual(IT_MOBILE, num);
         }
 
         [Test]
@@ -1910,421 +1917,314 @@ namespace PhoneNumbers.Test
             // Test parsing mobile numbers of Argentina.
             var arNumber = new PhoneNumber.Builder()
                 .SetCountryCode(54).SetNationalNumber(93435551212L).Build();
-            Assert.AreEqual(arNumber, phoneUtil.Parse("+54 9 343 555 1212", RegionCode.AR));
-            Assert.AreEqual(arNumber, phoneUtil.Parse("0343 15 555 1212", RegionCode.AR));
+            PhoneNumber num;
+            phoneUtil.Parse("+54 9 343 555 1212", RegionCode.AR, out num);
+            Assert.AreEqual(arNumber, num);
+            phoneUtil.Parse("0343 15 555 1212", RegionCode.AR, out num);
+            Assert.AreEqual(arNumber, num);
 
             arNumber = new PhoneNumber.Builder()
                 .SetCountryCode(54).SetNationalNumber(93715654320L).Build();
-            Assert.AreEqual(arNumber, phoneUtil.Parse("+54 9 3715 65 4320", RegionCode.AR));
-            Assert.AreEqual(arNumber, phoneUtil.Parse("03715 15 65 4320", RegionCode.AR));
-            Assert.AreEqual(AR_MOBILE, phoneUtil.Parse("911 876 54321", RegionCode.AR));
+            phoneUtil.Parse("+54 9 3715 65 4320", RegionCode.AR, out num);
+            Assert.AreEqual(arNumber, num);
+            phoneUtil.Parse("03715 15 65 4320", RegionCode.AR, out num);
+            Assert.AreEqual(arNumber, num);
+            phoneUtil.Parse("911 876 54321", RegionCode.AR, out num);
+            Assert.AreEqual(AR_MOBILE, num);
 
             // Test parsing fixed-line numbers of Argentina.
-            Assert.AreEqual(AR_NUMBER, phoneUtil.Parse("+54 11 8765 4321", RegionCode.AR));
-            Assert.AreEqual(AR_NUMBER, phoneUtil.Parse("011 8765 4321", RegionCode.AR));
+            phoneUtil.Parse("+54 11 8765 4321", RegionCode.AR, out num);
+            Assert.AreEqual(AR_NUMBER, num);
+            phoneUtil.Parse("011 8765 4321", RegionCode.AR, out num);
+            Assert.AreEqual(AR_NUMBER, num);
 
             arNumber = new PhoneNumber.Builder()
                 .SetCountryCode(54).SetNationalNumber(3715654321L).Build();
-            Assert.AreEqual(arNumber, phoneUtil.Parse("+54 3715 65 4321", RegionCode.AR));
-            Assert.AreEqual(arNumber, phoneUtil.Parse("03715 65 4321", RegionCode.AR));
+            phoneUtil.Parse("+54 3715 65 4321", RegionCode.AR, out num);
+            Assert.AreEqual(arNumber, num);
+            phoneUtil.Parse("03715 65 4321", RegionCode.AR, out num);
+            Assert.AreEqual(arNumber, num);
 
             arNumber = new PhoneNumber.Builder()
                 .SetCountryCode(54).SetNationalNumber(2312340000L).Build();
-            Assert.AreEqual(arNumber, phoneUtil.Parse("+54 23 1234 0000", RegionCode.AR));
-            Assert.AreEqual(arNumber, phoneUtil.Parse("023 1234 0000", RegionCode.AR));
+            phoneUtil.Parse("+54 23 1234 0000", RegionCode.AR, out num);
+            Assert.AreEqual(arNumber, num);
+            phoneUtil.Parse("023 1234 0000", RegionCode.AR, out num);
+            Assert.AreEqual(arNumber, num);
         }
 
         [Test]
         public void TestParseWithXInNumber()
         {
+            PhoneNumber num;
+
             // Test that having an 'x' in the phone number at the start is ok and that it just gets removed.
-            Assert.AreEqual(AR_NUMBER, phoneUtil.Parse("01187654321", RegionCode.AR));
-            Assert.AreEqual(AR_NUMBER, phoneUtil.Parse("(0) 1187654321", RegionCode.AR));
-            Assert.AreEqual(AR_NUMBER, phoneUtil.Parse("0 1187654321", RegionCode.AR));
-            Assert.AreEqual(AR_NUMBER, phoneUtil.Parse("(0xx) 1187654321", RegionCode.AR));
+            phoneUtil.Parse("01187654321", RegionCode.AR, out num);
+            Assert.AreEqual(AR_NUMBER, num);
+            phoneUtil.Parse("(0) 1187654321", RegionCode.AR, out num);
+            Assert.AreEqual(AR_NUMBER, num);
+            phoneUtil.Parse("0 1187654321", RegionCode.AR, out num);
+            Assert.AreEqual(AR_NUMBER, num);
+            phoneUtil.Parse("(0xx) 1187654321", RegionCode.AR, out num);
+            Assert.AreEqual(AR_NUMBER, num);
+
             var arFromUs = new PhoneNumber.Builder()
                 .SetCountryCode(54).SetNationalNumber(81429712L).Build();
             // This test is intentionally constructed such that the number of digit after xx is larger than
             // 7, so that the number won't be mistakenly treated as an extension, as we allow extensions up
             // to 7 digits. This assumption is okay for now as all the countries where a carrier selection
             // code is written in the form of xx have a national significant number of length larger than 7.
-            Assert.AreEqual(arFromUs, phoneUtil.Parse("011xx5481429712", RegionCode.US));
+            phoneUtil.Parse("011xx5481429712", RegionCode.US, out num);
+            Assert.AreEqual(arFromUs, num);
         }
 
         [Test]
         public void TestParseNumbersMexico()
         {
+            PhoneNumber num;
+
             // Test parsing fixed-line numbers of Mexico.
             PhoneNumber mxNumber = new PhoneNumber.Builder()
                 .SetCountryCode(52).SetNationalNumber(4499780001L).Build();
-            Assert.AreEqual(mxNumber, phoneUtil.Parse("+52 (449)978-0001", RegionCode.MX));
-            Assert.AreEqual(mxNumber, phoneUtil.Parse("01 (449)978-0001", RegionCode.MX));
-            Assert.AreEqual(mxNumber, phoneUtil.Parse("(449)978-0001", RegionCode.MX));
+            phoneUtil.Parse("+52 (449)978-0001", RegionCode.MX, out num);
+            Assert.AreEqual(mxNumber, num);
+            phoneUtil.Parse("01 (449)978-0001", RegionCode.MX, out num);
+            Assert.AreEqual(mxNumber, num);
+            phoneUtil.Parse("(449)978-0001", RegionCode.MX, out num);
+            Assert.AreEqual(mxNumber, num);
 
             // Test parsing mobile numbers of Mexico.
             mxNumber = new PhoneNumber.Builder()
                 .SetCountryCode(52).SetNationalNumber(13312345678L).Build();
-            Assert.AreEqual(mxNumber, phoneUtil.Parse("+52 1 33 1234-5678", RegionCode.MX));
-            Assert.AreEqual(mxNumber, phoneUtil.Parse("044 (33) 1234-5678", RegionCode.MX));
-            Assert.AreEqual(mxNumber, phoneUtil.Parse("045 33 1234-5678", RegionCode.MX));
+            phoneUtil.Parse("+52 1 33 1234-5678", RegionCode.MX, out num);
+            Assert.AreEqual(mxNumber, num);
+            phoneUtil.Parse("044 (33) 1234-5678", RegionCode.MX, out num);
+            Assert.AreEqual(mxNumber, num);
+            phoneUtil.Parse("045 33 1234-5678", RegionCode.MX, out num);
+            Assert.AreEqual(mxNumber, num);
         }
 
         [Test]
         public void TestFailedParseOnInvalidNumbers()
         {
-            try
-            {
-                String sentencePhoneNumber = "This is not a phone number";
-                phoneUtil.Parse(sentencePhoneNumber, RegionCode.NZ);
-                Assert.Fail("This should not parse without throwing an exception " + sentencePhoneNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(ErrorType.NOT_A_NUMBER,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String sentencePhoneNumber = "1 Still not a number";
-                phoneUtil.Parse(sentencePhoneNumber, RegionCode.NZ);
-                Assert.Fail("This should not parse without throwing an exception " + sentencePhoneNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(ErrorType.NOT_A_NUMBER,
-                       e.ErrorType,
-                       "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String sentencePhoneNumber = "1 MICROSOFT";
-                phoneUtil.Parse(sentencePhoneNumber, RegionCode.NZ);
-                Assert.Fail("This should not parse without throwing an exception " + sentencePhoneNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(ErrorType.NOT_A_NUMBER,
-                       e.ErrorType,
-                       "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String sentencePhoneNumber = "12 MICROSOFT";
-                phoneUtil.Parse(sentencePhoneNumber, RegionCode.NZ);
-                Assert.Fail("This should not parse without throwing an exception " + sentencePhoneNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(ErrorType.NOT_A_NUMBER,
-                       e.ErrorType,
-                       "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String tooLongPhoneNumber = "01495 72553301873 810104";
-                phoneUtil.Parse(tooLongPhoneNumber, RegionCode.GB);
-                Assert.Fail("This should not parse without throwing an exception " + tooLongPhoneNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
+            PhoneNumber num;
+            String sentencePhoneNumber = "This is not a phone number";
+            var result = phoneUtil.Parse(sentencePhoneNumber, RegionCode.NZ, out num);
+
+            Assert.AreEqual(ErrorType.NOT_A_NUMBER,
+                         result,
+                         "Wrong error type.");
+
+
+            sentencePhoneNumber = "1 Still not a number";
+            result = phoneUtil.Parse(sentencePhoneNumber, RegionCode.NZ, out num);
+
+            Assert.AreEqual(ErrorType.NOT_A_NUMBER,
+                   result,
+                   "Wrong error type.");
+
+            sentencePhoneNumber = "1 MICROSOFT";
+            result = phoneUtil.Parse(sentencePhoneNumber, RegionCode.NZ, out num);
+
+            Assert.AreEqual(ErrorType.NOT_A_NUMBER,
+                   result,
+                   "Wrong error type.");
+
+            sentencePhoneNumber = "12 MICROSOFT";
+            result = phoneUtil.Parse(sentencePhoneNumber, RegionCode.NZ, out num);
+
+            Assert.AreEqual(ErrorType.NOT_A_NUMBER,
+                   result,
+                   "Wrong error type.");
+
+            String tooLongPhoneNumber = "01495 72553301873 810104";
+            result = phoneUtil.Parse(tooLongPhoneNumber, RegionCode.GB, out num);
+
+            Assert.AreEqual(
                              ErrorType.TOO_LONG,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String plusMinusPhoneNumber = "+---";
-                phoneUtil.Parse(plusMinusPhoneNumber, RegionCode.DE);
-                Assert.Fail("This should not parse without throwing an exception " + plusMinusPhoneNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.NOT_A_NUMBER,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String plusStar = "+***";
-                phoneUtil.Parse(plusStar, RegionCode.DE);
-                Assert.Fail("This should not parse without throwing an exception " + plusStar);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                   ErrorType.NOT_A_NUMBER,
-                   e.ErrorType,
-                   "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String plusStarPhoneNumber = "+*******91";
-                phoneUtil.Parse(plusStarPhoneNumber, RegionCode.DE);
-                Assert.Fail("This should not parse without throwing an exception " + plusStarPhoneNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                   ErrorType.NOT_A_NUMBER,
-                   e.ErrorType,
-                   "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String tooShortPhoneNumber = "+49 0";
-                phoneUtil.Parse(tooShortPhoneNumber, RegionCode.DE);
-                Assert.Fail("This should not parse without throwing an exception " + tooShortPhoneNumber);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.TOO_SHORT_NSN,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String invalidCountryCode = "+210 3456 56789";
-                phoneUtil.Parse(invalidCountryCode, RegionCode.NZ);
-                Assert.Fail("This is not a recognised region code: should fail: " + invalidCountryCode);
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                    ErrorType.INVALID_COUNTRY_CODE,
-                   e.ErrorType,
-                   "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String plusAndIddAndInvalidCountryCode = "+ 00 210 3 331 6005";
-                phoneUtil.Parse(plusAndIddAndInvalidCountryCode, RegionCode.NZ);
-                Assert.Fail("This should not parse without throwing an exception.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception. 00 is a correct IDD, but 210 is not a valid country code.
-                Assert.AreEqual(
-                             ErrorType.INVALID_COUNTRY_CODE,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String someNumber = "123 456 7890";
-                phoneUtil.Parse(someNumber, RegionCode.ZZ);
-                Assert.Fail("'Unknown' region code not allowed: should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.INVALID_COUNTRY_CODE,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String someNumber = "123 456 7890";
-                phoneUtil.Parse(someNumber, RegionCode.CS);
-                Assert.Fail("Deprecated region code not allowed: should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.INVALID_COUNTRY_CODE,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String someNumber = "123 456 7890";
-                phoneUtil.Parse(someNumber, null);
-                Assert.Fail("Null region code not allowed: should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.INVALID_COUNTRY_CODE,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String someNumber = "0044------";
-                phoneUtil.Parse(someNumber, RegionCode.GB);
-                Assert.Fail("No number provided, only region code: should fail");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.TOO_SHORT_AFTER_IDD,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String someNumber = "0044";
-                phoneUtil.Parse(someNumber, RegionCode.GB);
-                Assert.Fail("No number provided, only region code: should fail");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.TOO_SHORT_AFTER_IDD,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String someNumber = "011";
-                phoneUtil.Parse(someNumber, RegionCode.US);
-                Assert.Fail("Only IDD provided - should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.TOO_SHORT_AFTER_IDD,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String someNumber = "0119";
-                phoneUtil.Parse(someNumber, RegionCode.US);
-                Assert.Fail("Only IDD provided and then 9 - should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.TOO_SHORT_AFTER_IDD,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String emptyNumber = "";
-                // Invalid region.
-                phoneUtil.Parse(emptyNumber, RegionCode.ZZ);
-                Assert.Fail("Empty string - should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.NOT_A_NUMBER,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            try
-            {
-                String nullNumber = null;
-                // Invalid region.
-                phoneUtil.Parse(nullNumber, RegionCode.ZZ);
-                Assert.Fail("Null string - should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.NOT_A_NUMBER,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            catch (ArgumentNullException)
-            {
-                Assert.Fail("Null string - but should not throw a null pointer exception.");
-            }
-            try
-            {
-                String nullNumber = null;
-                phoneUtil.Parse(nullNumber, RegionCode.US);
-                Assert.Fail("Null string - should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                             ErrorType.NOT_A_NUMBER,
-                             e.ErrorType,
-                             "Wrong error type stored in exception.");
-            }
-            catch (ArgumentNullException)
-            {
-                Assert.Fail("Null string - but should not throw a null pointer exception.");
-            }
-            try
-            {
-                String domainRfcPhoneContext = "tel:555-1234;phone-context=www.google.com";
-                phoneUtil.Parse(domainRfcPhoneContext, RegionCode.ZZ);
-                Assert.Fail("'Unknown' region code not allowed: should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(ErrorType.INVALID_COUNTRY_CODE,
-                   e.ErrorType,
-                   "Wrong error type stored in exception.");
-            }
-            catch (ArgumentNullException)
-            {
-                Assert.Fail("Domain provided for phone context - but should not throw a null pointer exception.");
-            }
-            try
-            {
-                // This is invalid because no "+" sign is present as part of phone-context. This should not
-                // succeed in being parsed.
-                String invalidRfcPhoneContext = "tel:555-1234;phone-context=1-331";
-                phoneUtil.Parse(invalidRfcPhoneContext, RegionCode.ZZ);
-                Assert.Fail("'Unknown' region code not allowed: should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(ErrorType.INVALID_COUNTRY_CODE,
-                   e.ErrorType,
-                   "Wrong error type stored in exception.");
-            }
+                             result,
+                             "Wrong error type.");
+
+            String plusMinusPhoneNumber = "+---";
+            result = phoneUtil.Parse(plusMinusPhoneNumber, RegionCode.DE, out num);
+
+            Assert.AreEqual(
+                         ErrorType.NOT_A_NUMBER,
+                         result,
+                         "Wrong error type.");
+
+            String plusStar = "+***";
+            result = phoneUtil.Parse(plusStar, RegionCode.DE, out num);
+
+            Assert.AreEqual(
+               ErrorType.NOT_A_NUMBER,
+               result,
+               "Wrong error type.");
+
+            String plusStarPhoneNumber = "+*******91";
+            result = phoneUtil.Parse(plusStarPhoneNumber, RegionCode.DE, out num);
+
+            Assert.AreEqual(
+               ErrorType.NOT_A_NUMBER,
+               result,
+               "Wrong error type.");
+
+            String tooShortPhoneNumber = "+49 0";
+            result = phoneUtil.Parse(tooShortPhoneNumber, RegionCode.DE, out num);
+
+            Assert.AreEqual(
+                         ErrorType.TOO_SHORT_NSN,
+                         result,
+                         "Wrong error type.");
+
+            String invalidCountryCode = "+210 3456 56789";
+            result = phoneUtil.Parse(invalidCountryCode, RegionCode.NZ, out num);
+
+            Assert.AreEqual(
+                ErrorType.INVALID_COUNTRY_CODE,
+               result,
+               "Wrong error type.");
+
+            String plusAndIddAndInvalidCountryCode = "+ 00 210 3 331 6005";
+            result = phoneUtil.Parse(plusAndIddAndInvalidCountryCode, RegionCode.NZ, out num);
+
+
+            //00 is a correct IDD, but 210 is not a valid country code.
+            Assert.AreEqual(
+                         ErrorType.INVALID_COUNTRY_CODE,
+                         result,
+                         "Wrong error type.");
+
+            string someNumber = "123 456 7890";
+            result = phoneUtil.Parse(someNumber, RegionCode.ZZ, out num);
+
+
+
+            Assert.AreEqual(
+                         ErrorType.INVALID_COUNTRY_CODE,
+                         result,
+                         "Wrong error type.");
+
+            someNumber = "123 456 7890";
+            result = phoneUtil.Parse(someNumber, RegionCode.CS, out num);
+
+            Assert.AreEqual(
+                         ErrorType.INVALID_COUNTRY_CODE,
+                         result,
+                         "Wrong error type.");
+
+            someNumber = "123 456 7890";
+            result = phoneUtil.Parse(someNumber, null, out num);
+
+            Assert.AreEqual(
+                         ErrorType.INVALID_COUNTRY_CODE,
+                         result,
+                         "Wrong error type.");
+
+            someNumber = "0044------";
+            result = phoneUtil.Parse(someNumber, RegionCode.GB, out num);
+
+            Assert.AreEqual(
+                         ErrorType.TOO_SHORT_AFTER_IDD,
+                         result,
+                         "Wrong error type.");
+
+            someNumber = "0044";
+            result = phoneUtil.Parse(someNumber, RegionCode.GB, out num);
+
+            Assert.AreEqual(
+                         ErrorType.TOO_SHORT_AFTER_IDD,
+                         result,
+                         "Wrong error type.");
+
+            someNumber = "011";
+            result = phoneUtil.Parse(someNumber, RegionCode.US, out num);
+
+            Assert.AreEqual(
+                         ErrorType.TOO_SHORT_AFTER_IDD,
+                         result,
+                         "Wrong error type.");
+
+            someNumber = "0119";
+            result = phoneUtil.Parse(someNumber, RegionCode.US, out num);
+
+            Assert.AreEqual(
+                         ErrorType.TOO_SHORT_AFTER_IDD,
+                         result,
+                         "Wrong error type.");
+
+            String emptyNumber = "";
+            // Invalid region.
+            result = phoneUtil.Parse(emptyNumber, RegionCode.ZZ, out num);
+
+            Assert.AreEqual(
+                         ErrorType.NOT_A_NUMBER,
+                         result,
+                         "Wrong error type.");
+            String nullNumber = null;
+            // Invalid region.
+            result = phoneUtil.Parse(nullNumber, RegionCode.ZZ, out num);
+
+            Assert.AreEqual(
+                         ErrorType.NOT_A_NUMBER,
+                         result,
+                         "Wrong error type.");
+
+
+            nullNumber = null;
+            result = phoneUtil.Parse(nullNumber, RegionCode.US, out num);
+
+            Assert.AreEqual(
+                         ErrorType.NOT_A_NUMBER,
+                         result,
+                         "Wrong error type.");
+
+            String domainRfcPhoneContext = "tel:555-1234;phone-context=www.google.com";
+            result = phoneUtil.Parse(domainRfcPhoneContext, RegionCode.ZZ, out num);
+
+            Assert.AreEqual(ErrorType.INVALID_COUNTRY_CODE,
+               result,
+               "Wrong error type.");
+
+            // This is invalid because no "+" sign is present as part of phone-context. This should not
+            // succeed in being parsed.
+            String invalidRfcPhoneContext = "tel:555-1234;phone-context=1-331";
+            result = phoneUtil.Parse(invalidRfcPhoneContext, RegionCode.ZZ, out num);
+
+            // Expected this exception.
+            Assert.AreEqual(ErrorType.INVALID_COUNTRY_CODE,
+               result,
+               "Wrong error type.");
         }
 
         [Test]
         public void TestParseNumbersWithPlusWithNoRegion()
         {
+            PhoneNumber num;
             // RegionCode.ZZ is allowed only if the number starts with a '+' - then the country calling code
             // can be calculated.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("+64 3 331 6005", RegionCode.ZZ));
+            phoneUtil.Parse("+64 3 331 6005", RegionCode.ZZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
             // Test with full-width plus.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("\uFF0B64 3 331 6005", RegionCode.ZZ));
+            phoneUtil.Parse("\uFF0B64 3 331 6005", RegionCode.ZZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
             // Test with normal plus but leading characters that need to be stripped.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("Tel: +64 3 331 6005", RegionCode.ZZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("+64 3 331 6005", null));
-            Assert.AreEqual(INTERNATIONAL_TOLL_FREE, phoneUtil.Parse("+800 1234 5678", null));
-            Assert.AreEqual(UNIVERSAL_PREMIUM_RATE, phoneUtil.Parse("+979 123 456 789", null));
+            phoneUtil.Parse("Tel: +64 3 331 6005", RegionCode.ZZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("+64 3 331 6005", null, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("+800 1234 5678", null, out num);
+            Assert.AreEqual(INTERNATIONAL_TOLL_FREE, num);
+            phoneUtil.Parse("+979 123 456 789", null, out num);
+            Assert.AreEqual(UNIVERSAL_PREMIUM_RATE, num);
 
             // Test parsing RFC3966 format with a phone context.
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("tel:03-331-6005;phone-context=+64", RegionCode.ZZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("  tel:03-331-6005;phone-context=+64", RegionCode.ZZ));
-            Assert.AreEqual(NZ_NUMBER, phoneUtil.Parse("tel:03-331-6005;isub=12345;phone-context=+64",
-                RegionCode.ZZ));
+            phoneUtil.Parse("tel:03-331-6005;phone-context=+64", RegionCode.ZZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("  tel:03-331-6005;phone-context=+64", RegionCode.ZZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
+            phoneUtil.Parse("tel:03-331-6005;isub=12345;phone-context=+64", RegionCode.ZZ, out num);
+            Assert.AreEqual(NZ_NUMBER, num);
 
             // It is important that we set the carrier code to an empty string, since we used
             // ParseAndKeepRawInput and no carrier code was found.
@@ -2332,96 +2232,124 @@ namespace PhoneNumbers.Test
                 .SetRawInput("+64 3 331 6005")
                 .SetCountryCodeSource(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_PLUS_SIGN)
                 .SetPreferredDomesticCarrierCode("").Build();
-            Assert.AreEqual(nzNumberWithRawInput, phoneUtil.ParseAndKeepRawInput("+64 3 331 6005",
-                                                                      RegionCode.ZZ));
+            phoneUtil.ParseAndKeepRawInput("+64 3 331 6005", RegionCode.ZZ, out num);
+            Assert.AreEqual(nzNumberWithRawInput, num);
             // Null is also allowed for the region code in these cases.
-            Assert.AreEqual(nzNumberWithRawInput, phoneUtil.ParseAndKeepRawInput("+64 3 331 6005", null));
+            phoneUtil.ParseAndKeepRawInput("+64 3 331 6005", null, out num);
+            Assert.AreEqual(nzNumberWithRawInput, num);
         }
 
         [Test]
         public void TestParseExtensions()
         {
+            PhoneNumber num;
+
             PhoneNumber nzNumber = new PhoneNumber.Builder()
                 .SetCountryCode(64).SetNationalNumber(33316005L).SetExtension("3456").Build();
-            Assert.AreEqual(nzNumber, phoneUtil.Parse("03 331 6005 ext 3456", RegionCode.NZ));
-            Assert.AreEqual(nzNumber, phoneUtil.Parse("03-3316005x3456", RegionCode.NZ));
-            Assert.AreEqual(nzNumber, phoneUtil.Parse("03-3316005 int.3456", RegionCode.NZ));
-            Assert.AreEqual(nzNumber, phoneUtil.Parse("03 3316005 #3456", RegionCode.NZ));
+            phoneUtil.Parse("03 331 6005 ext 3456", RegionCode.NZ, out num);
+            Assert.AreEqual(nzNumber, num);
+            phoneUtil.Parse("03-3316005x3456", RegionCode.NZ, out num);
+            Assert.AreEqual(nzNumber, num);
+            phoneUtil.Parse("03-3316005 int.3456", RegionCode.NZ, out num);
+            Assert.AreEqual(nzNumber, num);
+            phoneUtil.Parse("03 3316005 #3456", RegionCode.NZ, out num);
+            Assert.AreEqual(nzNumber, num);
             // Test the following do not extract extensions:
-            Assert.AreEqual(ALPHA_NUMERIC_NUMBER, phoneUtil.Parse("1800 six-flags", RegionCode.US));
-            Assert.AreEqual(ALPHA_NUMERIC_NUMBER, phoneUtil.Parse("1800 SIX FLAGS", RegionCode.US));
-            Assert.AreEqual(ALPHA_NUMERIC_NUMBER, phoneUtil.Parse("0~0 1800 7493 5247", RegionCode.PL));
-            Assert.AreEqual(ALPHA_NUMERIC_NUMBER, phoneUtil.Parse("(1800) 7493.5247", RegionCode.US));
+            phoneUtil.Parse("1800 six-flags", RegionCode.US, out num);
+            Assert.AreEqual(ALPHA_NUMERIC_NUMBER, num);
+            phoneUtil.Parse("1800 SIX FLAGS", RegionCode.US, out num);
+            Assert.AreEqual(ALPHA_NUMERIC_NUMBER, num);
+            phoneUtil.Parse("0~0 1800 7493 5247", RegionCode.PL, out num);
+            Assert.AreEqual(ALPHA_NUMERIC_NUMBER, num);
+            phoneUtil.Parse("(1800) 7493.5247", RegionCode.US, out num);
+            Assert.AreEqual(ALPHA_NUMERIC_NUMBER, num);
             // Check that the last instance of an extension token is matched.
             PhoneNumber extnNumber = new PhoneNumber.Builder().MergeFrom(ALPHA_NUMERIC_NUMBER).SetExtension("1234").Build();
-            Assert.AreEqual(extnNumber, phoneUtil.Parse("0~0 1800 7493 5247 ~1234", RegionCode.PL));
+            phoneUtil.Parse("0~0 1800 7493 5247 ~1234", RegionCode.PL, out num);
+            Assert.AreEqual(extnNumber, num);
             // Verifying bug-fix where the last digit of a number was previously omitted if it was a 0 when
             // extracting the extension. Also verifying a few different cases of extensions.
             PhoneNumber ukNumber = new PhoneNumber.Builder()
                 .SetCountryCode(44).SetNationalNumber(2034567890L).SetExtension("456").Build();
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44 2034567890x456", RegionCode.NZ));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44 2034567890x456", RegionCode.GB));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44 2034567890 x456", RegionCode.GB));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44 2034567890 X456", RegionCode.GB));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44 2034567890 X 456", RegionCode.GB));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44 2034567890 X  456", RegionCode.GB));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44 2034567890 x 456  ", RegionCode.GB));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44 2034567890  X 456", RegionCode.GB));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+44-2034567890;ext=456", RegionCode.GB));
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("tel:2034567890;ext=456;phone-context=+44",
-                                           RegionCode.ZZ));
+            phoneUtil.Parse("+44 2034567890x456", RegionCode.NZ, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("+44 2034567890x456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("+44 2034567890 x456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("+44 2034567890 X456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("+44 2034567890 X 456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("+44 2034567890 X  456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("+44 2034567890 x 456  ", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("+44 2034567890  X 456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("+44-2034567890;ext=456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
+            phoneUtil.Parse("tel:2034567890;ext=456;phone-context=+44", RegionCode.ZZ, out num);
+            Assert.AreEqual(ukNumber, num);
             // Full-width extension, "extn" only.
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+442034567890\uFF45\uFF58\uFF54\uFF4E456",
-                RegionCode.GB));
+            phoneUtil.Parse("+442034567890\uFF45\uFF58\uFF54\uFF4E456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
             // "xtn" only.
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+442034567890\uFF58\uFF54\uFF4E456",
-                RegionCode.GB));
+            phoneUtil.Parse("+442034567890\uFF58\uFF54\uFF4E456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
             // "xt" only.
-            Assert.AreEqual(ukNumber, phoneUtil.Parse("+442034567890\uFF58\uFF54456",
-                RegionCode.GB));
+            phoneUtil.Parse("+442034567890\uFF58\uFF54456", RegionCode.GB, out num);
+            Assert.AreEqual(ukNumber, num);
 
             PhoneNumber usWithExtension = new PhoneNumber.Builder()
                 .SetCountryCode(1).SetNationalNumber(8009013355L).SetExtension("7246433").Build();
-            Assert.AreEqual(usWithExtension, phoneUtil.Parse("(800) 901-3355 x 7246433", RegionCode.US));
-            Assert.AreEqual(usWithExtension, phoneUtil.Parse("(800) 901-3355 , ext 7246433", RegionCode.US));
-            Assert.AreEqual(usWithExtension,
-                     phoneUtil.Parse("(800) 901-3355 ,extension 7246433", RegionCode.US));
-            Assert.AreEqual(usWithExtension,
-                     phoneUtil.Parse("(800) 901-3355 ,extensi\u00F3n 7246433", RegionCode.US));
+            phoneUtil.Parse("(800) 901-3355 x 7246433", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
+            phoneUtil.Parse("(800) 901-3355 , ext 7246433", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
+            phoneUtil.Parse("(800) 901-3355 ,extension 7246433", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
+            phoneUtil.Parse("(800) 901-3355 ,extensi\u00F3n 7246433", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
             // Repeat with the small letter o with acute accent created by combining characters.
-            Assert.AreEqual(usWithExtension,
-                     phoneUtil.Parse("(800) 901-3355 ,extensio\u0301n 7246433", RegionCode.US));
-            Assert.AreEqual(usWithExtension, phoneUtil.Parse("(800) 901-3355 , 7246433", RegionCode.US));
-            Assert.AreEqual(usWithExtension, phoneUtil.Parse("(800) 901-3355 ext: 7246433", RegionCode.US));
+            phoneUtil.Parse("(800) 901-3355 ,extensio\u0301n 7246433", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
+            phoneUtil.Parse("(800) 901-3355 , 7246433", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
+            phoneUtil.Parse("(800) 901-3355 ext: 7246433", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
 
             // Test that if a number has two extensions specified, we ignore the second.
             PhoneNumber usWithTwoExtensionsNumber = new PhoneNumber.Builder()
                 .SetCountryCode(1).SetNationalNumber(2121231234L).SetExtension("508").Build();
-            Assert.AreEqual(usWithTwoExtensionsNumber, phoneUtil.Parse("(212)123-1234 x508/x1234",
-                                                                RegionCode.US));
-            Assert.AreEqual(usWithTwoExtensionsNumber, phoneUtil.Parse("(212)123-1234 x508/ x1234",
-                                                                RegionCode.US));
-            Assert.AreEqual(usWithTwoExtensionsNumber, phoneUtil.Parse("(212)123-1234 x508\\x1234",
-                                                                RegionCode.US));
+            phoneUtil.Parse("(212)123-1234 x508/x1234", RegionCode.US, out num);
+            Assert.AreEqual(usWithTwoExtensionsNumber, num);
+            phoneUtil.Parse("(212)123-1234 x508/ x1234", RegionCode.US, out num);
+            Assert.AreEqual(usWithTwoExtensionsNumber, num);
+            phoneUtil.Parse("(212)123-1234 x508\\x1234", RegionCode.US, out num);
+            Assert.AreEqual(usWithTwoExtensionsNumber, num);
 
             // Test parsing numbers in the form (645) 123-1234-910# works, where the last 3 digits before
             // the # are an extension.
             usWithExtension = new PhoneNumber.Builder()
                 .SetCountryCode(1).SetNationalNumber(6451231234L).SetExtension("910").Build();
-            Assert.AreEqual(usWithExtension, phoneUtil.Parse("+1 (645) 123 1234-910#", RegionCode.US));
+            phoneUtil.Parse("+1 (645) 123 1234-910#", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
             // Retry with the same number in a slightly different format.
-            Assert.AreEqual(usWithExtension, phoneUtil.Parse("+1 (645) 123 1234 ext. 910#", RegionCode.US));
+            phoneUtil.Parse("+1 (645) 123 1234 ext. 910#", RegionCode.US, out num);
+            Assert.AreEqual(usWithExtension, num);
         }
 
         [Test]
         public void TestParseAndKeepRaw()
         {
+            PhoneNumber num;
             PhoneNumber alphaNumericNumber = new PhoneNumber.Builder().MergeFrom(ALPHA_NUMERIC_NUMBER)
                 .SetRawInput("800 six-flags")
                 .SetCountryCodeSource(PhoneNumber.Types.CountryCodeSource.FROM_DEFAULT_COUNTRY)
                 .SetPreferredDomesticCarrierCode("").Build();
-            Assert.AreEqual(alphaNumericNumber,
-                phoneUtil.ParseAndKeepRawInput("800 six-flags", RegionCode.US));
+            phoneUtil.ParseAndKeepRawInput("800 six-flags", RegionCode.US, out num);
+            Assert.AreEqual(alphaNumericNumber, num);
 
             PhoneNumber shorterAlphaNumber = new PhoneNumber.Builder()
                 .SetCountryCode(1)
@@ -2429,39 +2357,32 @@ namespace PhoneNumbers.Test
                 .SetRawInput("1800 six-flag")
                 .SetCountryCodeSource(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITHOUT_PLUS_SIGN)
                 .SetPreferredDomesticCarrierCode("").Build();
-            Assert.AreEqual(shorterAlphaNumber,
-                phoneUtil.ParseAndKeepRawInput("1800 six-flag", RegionCode.US));
+            phoneUtil.ParseAndKeepRawInput("1800 six-flag", RegionCode.US, out num);
+            Assert.AreEqual(shorterAlphaNumber, num);
 
             shorterAlphaNumber = Update(shorterAlphaNumber).SetRawInput("+1800 six-flag").
                 SetCountryCodeSource(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_PLUS_SIGN).Build();
-            Assert.AreEqual(shorterAlphaNumber,
-                phoneUtil.ParseAndKeepRawInput("+1800 six-flag", RegionCode.NZ));
+            phoneUtil.ParseAndKeepRawInput("+1800 six-flag", RegionCode.NZ, out num);
+            Assert.AreEqual(shorterAlphaNumber, num);
 
             shorterAlphaNumber = Update(shorterAlphaNumber).SetRawInput("001800 six-flag").
                 SetCountryCodeSource(PhoneNumber.Types.CountryCodeSource.FROM_NUMBER_WITH_IDD).Build();
-            Assert.AreEqual(shorterAlphaNumber,
-                phoneUtil.ParseAndKeepRawInput("001800 six-flag", RegionCode.NZ));
+            phoneUtil.ParseAndKeepRawInput("001800 six-flag", RegionCode.NZ, out num);
+            Assert.AreEqual(shorterAlphaNumber, num);
 
             // Invalid region code supplied.
-            try
-            {
-                phoneUtil.ParseAndKeepRawInput("123 456 7890", RegionCode.CS);
-                Assert.Fail("Deprecated region code not allowed: should fail.");
-            }
-            catch (NumberParseException e)
-            {
-                // Expected this exception.
-                Assert.AreEqual(
-                    ErrorType.INVALID_COUNTRY_CODE,
-                    e.ErrorType,
-                    "Wrong error type stored in exception.");
-            }
+            var result = phoneUtil.ParseAndKeepRawInput("123 456 7890", RegionCode.CS, out num);
+            Assert.AreEqual(
+                ErrorType.INVALID_COUNTRY_CODE,
+                result,
+                "Wrong error type.");
 
             PhoneNumber koreanNumber = new PhoneNumber.Builder()
                 .SetCountryCode(82).SetNationalNumber(22123456).SetRawInput("08122123456").
                 SetCountryCodeSource(PhoneNumber.Types.CountryCodeSource.FROM_DEFAULT_COUNTRY).
                 SetPreferredDomesticCarrierCode("81").Build();
-            Assert.AreEqual(koreanNumber, phoneUtil.ParseAndKeepRawInput("08122123456", RegionCode.KR));
+            phoneUtil.ParseAndKeepRawInput("08122123456", RegionCode.KR, out num);
+            Assert.AreEqual(koreanNumber, num);
         }
 
         [Test]

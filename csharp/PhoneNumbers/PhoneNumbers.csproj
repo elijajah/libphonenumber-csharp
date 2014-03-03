@@ -55,7 +55,7 @@
     <Compile Include="LocaleData.cs" />
     <Compile Include="MappingFileProvider.cs" />
     <Compile Include="MetadataManager.cs" />
-    <Compile Include="NumberParseException.cs" />
+    <Compile Include="ErrorType.cs" />
     <Compile Include="Phonemetadata.cs" />
     <Compile Include="Phonenumber.cs" />
     <Compile Include="PhoneNumberMatch.cs" />

@@ -319,7 +319,7 @@ namespace PhoneNumbers
             // Try to come up with a valid match given the entire candidate.
             String rawString = candidate;
             PhoneNumberMatch match = ParseAndVerify(rawString, offset);
-            if (match != null)
+            if(match != null)
                 return match;
 
             // If that failed, try to find an "inner match" - there might be a phone number within this
@@ -396,56 +396,54 @@ namespace PhoneNumbers
         */
         private PhoneNumberMatch ParseAndVerify(String candidate, int offset)
         {
-            try
-            {
-                // Check the candidate doesn't contain any formatting which would indicate that it really
-                // isn't a phone number.
-                if (!MATCHING_BRACKETS.MatchAll(candidate).Success)
-                    return null;
+            // Check the candidate doesn't contain any formatting which would indicate that it really
+            // isn't a phone number.
+            if (!MATCHING_BRACKETS.MatchAll(candidate).Success)
+                return null;
 
-                // If leniency is set to VALID or stricter, we also want to skip numbers that are surrounded
-                // by Latin alphabetic characters, to skip cases like abc8005001234 or 8005001234def.
-                if (leniency >= PhoneNumberUtil.Leniency.VALID)
+            // If leniency is set to VALID or stricter, we also want to skip numbers that are surrounded
+            // by Latin alphabetic characters, to skip cases like abc8005001234 or 8005001234def.
+            if (leniency >= PhoneNumberUtil.Leniency.VALID)
+            {
+                // If the candidate is not at the start of the text, and does not start with phone-number
+                // punctuation, check the previous character.
+                if (offset > 0 && !LEAD_CLASS.MatchBeginning(candidate).Success)
                 {
-                    // If the candidate is not at the start of the text, and does not start with phone-number
-                    // punctuation, check the previous character.
-                    if (offset > 0 && !LEAD_CLASS.MatchBeginning(candidate).Success)
+                    char previousChar = text[offset - 1];
+                    // We return null if it is a latin letter or an invalid punctuation symbol.
+                    if (IsInvalidPunctuationSymbol(previousChar) || IsLatinLetter(previousChar))
                     {
-                        char previousChar = text[offset - 1];
-                        // We return null if it is a latin letter or an invalid punctuation symbol.
-                        if (IsInvalidPunctuationSymbol(previousChar) || IsLatinLetter(previousChar))
-                        {
-                            return null;
-                        }
-                    }
-                    int lastCharIndex = offset + candidate.Length;
-                    if (lastCharIndex < text.Length)
-                    {
-                        char nextChar = text[lastCharIndex];
-                        if (IsInvalidPunctuationSymbol(nextChar) || IsLatinLetter(nextChar))
-                        {
-                            return null;
-                        }
+                        return null;
                     }
                 }
-
-                PhoneNumber number = phoneUtil.ParseAndKeepRawInput(candidate, preferredRegion);
-                if (phoneUtil.Verify(leniency, number, candidate, phoneUtil))
+                int lastCharIndex = offset + candidate.Length;
+                if (lastCharIndex < text.Length)
                 {
-                    // We used parseAndKeepRawInput to create this number, but for now we don't return the extra
-                    // values parsed. TODO: stop clearing all values here and switch all users over
-                    // to using rawInput() rather than the rawString() of PhoneNumberMatch.
-                    var bnumber = number.ToBuilder();
-                    bnumber.ClearCountryCodeSource();
-                    bnumber.ClearRawInput();
-                    bnumber.ClearPreferredDomesticCarrierCode();
-                    return new PhoneNumberMatch(offset, candidate, bnumber.Build());
+                    char nextChar = text[lastCharIndex];
+                    if (IsInvalidPunctuationSymbol(nextChar) || IsLatinLetter(nextChar))
+                    {
+                        return null;
+                    }
                 }
             }
-            catch (NumberParseException)
+
+            PhoneNumber number;
+            var result = phoneUtil.ParseAndKeepRawInput(candidate, preferredRegion, out number);
+            if (result != ErrorType.NO_ERROR)
+                return null;
+
+            if (phoneUtil.Verify(leniency, number, candidate, phoneUtil))
             {
-                // ignore and continue
+                // We used parseAndKeepRawInput to create this number, but for now we don't return the extra
+                // values parsed. TODO: stop clearing all values here and switch all users over
+                // to using rawInput() rather than the rawString() of PhoneNumberMatch.
+                var bnumber = number.ToBuilder();
+                bnumber.ClearCountryCodeSource();
+                bnumber.ClearRawInput();
+                bnumber.ClearPreferredDomesticCarrierCode();
+                return new PhoneNumberMatch(offset, candidate, bnumber.Build());
             }
+            
             return null;
         }
 

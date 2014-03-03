@@ -179,18 +179,13 @@ namespace PhoneNumbers.Test
             foreach (var regionCode in phoneNumberUtil.GetSupportedRegions())
             {
                 PhoneNumber exampleNumber = null;
-                PhoneNumberDesc desc =
-                    phoneNumberUtil.GetMetadataForRegion(regionCode).NoInternationalDialling;
-                try
+                PhoneNumberDesc desc = phoneNumberUtil.GetMetadataForRegion(regionCode).NoInternationalDialling;
+
+                if (desc.HasExampleNumber)
                 {
-                    if (desc.HasExampleNumber)
-                    {
-                        exampleNumber = phoneNumberUtil.Parse(desc.ExampleNumber, regionCode);
-                    }
+                    phoneNumberUtil.Parse(desc.ExampleNumber, regionCode, out exampleNumber);
                 }
-                catch (NumberParseException)
-                {
-                }
+
                 if (exampleNumber != null && phoneNumberUtil.CanBeInternationallyDialled(exampleNumber))
                 {
                     wrongTypeCases.Add(exampleNumber);
