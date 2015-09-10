@@ -554,13 +554,9 @@ namespace PhoneNumbers
 
         public void PreloadMetadataFromFile()
         {
-            lock (regionToMetadataMap)
-            {
-                LoadMetadataFromFile(currentFilePrefix_, "");
-            }
         }
 
-        private void LoadMetadataFromFile(String filePrefix, String regionCode)
+        private void LoadMetadataFromFile(String filePrefix, String regionCode, int countryCallingCode)
         {
             var asm = typeof(PhoneNumberUtil).GetTypeInfo().Assembly;
             bool isNonGeoRegion = REGION_CODE_FOR_NON_GEO_ENTITY.Equals(regionCode);
@@ -1902,16 +1898,13 @@ namespace PhoneNumbers
         {
             if (!IsValidRegionCode(regionCode))
                 return null;
-            if (!regionToMetadataMap.ContainsKey(regionCode))
+            lock (regionToMetadataMap)
             {
-                lock (regionToMetadataMap)
+                if (!regionToMetadataMap.ContainsKey(regionCode))
                 {
-                    if (!regionToMetadataMap.ContainsKey(regionCode))
-                    {
-                        // The regionCode here will be valid and won't be '001', so we don't need to worry about
-                        // what to pass in for the country calling code.
-                        LoadMetadataFromFile(currentFilePrefix_, regionCode);
-                    }
+                    // The regionCode here will be valid and won't be '001', so we don't need to worry about
+                    // what to pass in for the country calling code.
+                    LoadMetadataFromFile(currentFilePrefix_, regionCode, 0);
                 }
             }
             return regionToMetadataMap.ContainsKey(regionCode)
@@ -1929,7 +1922,7 @@ namespace PhoneNumbers
                 }
                 if (!countryCodeToNonGeographicalMetadataMap.ContainsKey(countryCallingCode))
                 {
-                    LoadMetadataFromFile(currentFilePrefix_, REGION_CODE_FOR_NON_GEO_ENTITY);
+                    LoadMetadataFromFile(currentFilePrefix_, REGION_CODE_FOR_NON_GEO_ENTITY, countryCallingCode);
                 }
             }
             PhoneMetadata metadata = null;
